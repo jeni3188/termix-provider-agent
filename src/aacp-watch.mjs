@@ -26,11 +26,11 @@ function log(message) {
   console.log(`[${timestamp()}] ${message}`);
 }
 
-async function check() {
+export async function check(fetchImpl = fetch) {
   cycle++;
 
   try {
-    const response = await fetch(`${api}/config`, {
+    const response = await fetchImpl(`${api}/config`, {
       signal: AbortSignal.timeout(timeoutMs)
     });
 
@@ -67,48 +67,53 @@ async function check() {
     return {
       state: "DOWN",
       httpStatus: null,
-      reason: err?.name === "TimeoutError"
-        ? "TIMEOUT"
-        : `ERROR:${err?.message || "unknown"}`
+      reason:
+        err?.name === "TimeoutError"
+          ? "TIMEOUT"
+          : `ERROR:${err?.message || "unknown"}`
     };
   }
 }
 
-function handleState(result) {
+export function processState(result) {
   const state = result.state;
+  const events = [];
 
   if (previousState === "UNKNOWN") {
-    log(`INITIAL_STATE=${state}`);
+    events.push(`INITIAL_STATE=${state}`);
   } else if (previousState !== state) {
-    log(`STATE_CHANGE ${previousState} -> ${state}`);
+    events.push(`STATE_CHANGE ${previousState} -> ${state}`);
 
     if (previousState !== "HEALTHY" && state === "HEALTHY") {
-      log("AACP_RECOVERED");
-      log("ACTION=READ_ONLY_DISCOVERY_ALLOWED");
-      log("POST=DISABLED");
-      log("WALLET=NOT_USED");
-      log("SIGNING=NOT_USED");
-      log("SUBMISSION=NOT_PERFORMED");
+      events.push("AACP_RECOVERED");
+      events.push("ACTION=READ_ONLY_DISCOVERY_ALLOWED");
+      events.push("POST=DISABLED");
+      events.push("WALLET=NOT_USED");
+      events.push("SIGNING=NOT_USED");
+      events.push("SUBMISSION=NOT_PERFORMED");
     }
   }
 
   if (state === "HEALTHY") {
-    log(
+    events.push(
       `AACP HEALTHY HTTP ${result.httpStatus} (${result.reason})`
     );
   } else {
-    log(
+    events.push(
       `AACP ${state} ${result.httpStatus ?? "-"} (${result.reason})`
     );
   }
 
   previousState = state;
+
+  return events;
 }
 
 function shutdown(signal) {
   if (stopping) return;
 
   stopping = true;
+
   log(`SHUTDOWN ${signal}`);
   log("POST=DISABLED");
   log("WALLET=NOT_USED");
@@ -122,7 +127,7 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 console.log("========================================");
-console.log(" AACP RECOVERY MONITOR v2.0.0");
+console.log(" AACP RECOVERY MONITOR v2.1.0");
 console.log("========================================");
 console.log(`Backend : ${base}`);
 console.log(`Interval: ${Math.round(intervalMs / 1000)} seconds`);
@@ -134,16 +139,22 @@ console.log("Signing : NOT USED");
 console.log("Submit  : NOT PERFORMED");
 console.log("");
 
-while (!stopping) {
-  const result = await check();
+if (process.env.AACP_WATCH_TEST !== "1") {
+  while (!stopping) {
+    const result = await check();
 
-  log(`Cycle ${cycle}`);
-  handleState(result);
+    log(`Cycle ${cycle}`);
 
-  if (!stopping) {
-    log(
-      `Next check in ${Math.round(intervalMs / 1000)} seconds...`
-    );
-    await sleep(intervalMs);
+    for (const event of processState(result)) {
+      log(event);
+    }
+
+    if (!stopping) {
+      log(
+        `Next check in ${Math.round(intervalMs / 1000)} seconds...`
+      );
+
+      await sleep(intervalMs);
+    }
   }
 }
