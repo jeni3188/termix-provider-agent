@@ -1,0 +1,120 @@
+{
+  "deliverable": "TermiX Provider Security Assessment",
+  "version": "1.0.0",
+  "job": {
+    "jobId": "demo-security-fair-001",
+    "strategyType": "PROGRAM",
+    "title": "Smart Contract Security Audit"
+  },
+  "target": {
+    "sourceFile": "samples/Vulnerable.sol",
+    "bytes": 436,
+    "lines": 25
+  },
+  "assessment": {
+    "findings": [
+      {
+        "id": "TX-ORIGIN",
+        "severity": "HIGH",
+        "confidence": "HIGH",
+        "title": "tx.origin authorization",
+        "message": "tx.origin is used. Authorization should generally rely on msg.sender and explicit access control.",
+        "evidence": [
+          {
+            "line": 12,
+            "text": "require(tx.origin == owner);"
+          }
+        ]
+      },
+      {
+        "id": "SELFDESTRUCT",
+        "severity": "HIGH",
+        "confidence": "HIGH",
+        "title": "selfdestruct usage",
+        "message": "selfdestruct behavior requires explicit review because it can permanently alter contract behavior and ETH handling.",
+        "evidence": [
+          {
+            "line": 21,
+            "text": "selfdestruct(payable(msg.sender));"
+          }
+        ]
+      },
+      {
+        "id": "LOW-LEVEL-CALL",
+        "severity": "MEDIUM",
+        "confidence": "HIGH",
+        "title": "Low-level call",
+        "message": "Low-level external call detected. Review target validation, return handling and reentrancy protection.",
+        "evidence": [
+          {
+            "line": 14,
+            "text": "(bool ok, ) = target.call(\"\");"
+          }
+        ]
+      },
+      {
+        "id": "TIMESTAMP",
+        "severity": "MEDIUM",
+        "confidence": "HIGH",
+        "title": "Block timestamp dependency",
+        "message": "block.timestamp should not be treated as secure randomness or as an exact timing source.",
+        "evidence": [
+          {
+            "line": 18,
+            "text": "uint256 t = block.timestamp;"
+          }
+        ]
+      },
+      {
+        "id": "REENTRANCY-HEURISTIC",
+        "severity": "HIGH",
+        "confidence": "LOW",
+        "title": "Possible reentrancy pattern",
+        "message": "An external interaction appears before a nearby state write. Review checks-effects-interactions ordering and reentrancy guards.",
+        "evidence": [
+          {
+            "line": 14,
+            "text": "(bool ok, ) = target.call(\"\");"
+          }
+        ]
+      },
+      {
+        "id": "ACCESS-CONTROL-REVIEW",
+        "severity": "MEDIUM",
+        "confidence": "LOW",
+        "title": "Authorization review required",
+        "message": "No obvious access-control mechanism was detected. Manually review privileged functions.",
+        "evidence": []
+      }
+    ],
+    "summary": {
+      "total": 6,
+      "critical": 0,
+      "high": 3,
+      "medium": 3,
+      "low": 0,
+      "riskScore": 33,
+      "riskLevel": "CRITICAL"
+    }
+  },
+  "methodology": [
+    "Static Solidity source inspection",
+    "Pattern-based vulnerability detection",
+    "Severity classification",
+    "Confidence classification",
+    "Risk score calculation"
+  ],
+  "limitations": [
+    "Automated heuristic analysis is not a formal security audit.",
+    "Findings require manual validation.",
+    "No exploit execution was performed.",
+    "No transaction was signed or broadcast.",
+    "On-chain verification requires a separate RPC inspection."
+  ],
+  "execution": {
+    "mode": "READ_ONLY",
+    "walletRequired": false,
+    "transactionSigned": false,
+    "transactionBroadcast": false
+  }
+}

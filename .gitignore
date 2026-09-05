@@ -1,0 +1,7 @@
+node_modules/
+provider-output/
+backups/
+.env
+.env.*
+!.env.example
+*.log

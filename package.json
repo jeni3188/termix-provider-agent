@@ -1,0 +1,39 @@
+{
+  "name": "termix-provider-agent",
+  "version": "0.1.0",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "analyze": "node src/analyze.mjs",
+    "scan": "node src/audit.mjs",
+    "rpc": "node src/rpc-check.mjs",
+    "report": "node src/report.mjs",
+    "inspect": "node src/inspect.mjs",
+    "jobs": "node src/termix-jobs.mjs",
+    "health": "node src/termix-health.mjs",
+    "match": "node src/job-matcher.mjs",
+    "offer": "node src/draft-offer.mjs",
+    "evaluate": "node src/provider-evaluate.mjs",
+    "deliver": "node src/provider-deliverable.mjs",
+    "pipeline": "node src/provider-pipeline.mjs",
+    "intake": "node src/termix-intake.mjs",
+    "process": "node src/job-processor.mjs",
+    "test": "node tests/regression.mjs",
+    "auto": "node src/auto-processor.mjs",
+    "offer-draft": "node src/offer-draft.mjs",
+    "test:offer": "node tests/offer-draft-regression.mjs",
+    "offer-review": "node src/offer-review.mjs",
+    "aacp-submit": "node src/aacp-submit.mjs",
+    "offer-approval": "node src/offer-approval.mjs",
+    "aacp-validate": "node src/aacp-validate.mjs",
+    "aacp-live-submit": "node src/aacp-live-submit.mjs",
+    "aacp-preflight": "node src/aacp-preflight.mjs",
+    "aacp-watch": "node src/aacp-watch.mjs",
+    "state": "node src/provider-state.mjs",
+    "test:e2e": "node tests/e2e-provider-offline.mjs",
+    "test:security": "node tests/security-validator.mjs"
+  },
+  "dependencies": {
+    "ethers": "^6.17.0"
+  }
+}

@@ -1,0 +1,10 @@
+{
+  "jobId": "demo-security-001",
+  "status": "OPEN",
+  "strategyType": "PROGRAM",
+  "budget": "250000000",
+  "title": "Smart Contract Security Audit",
+  "description": "Audit an EVM Solidity smart contract. Identify reentrancy, access control, tx.origin, delegatecall, dangerous calls, timestamp issues and other security risks.",
+  "deadline": 1799000000,
+  "providerId": null
+}

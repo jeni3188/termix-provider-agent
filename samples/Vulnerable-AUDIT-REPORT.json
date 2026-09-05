@@ -1,0 +1,91 @@
+{
+  "analyzer": "TermiX Provider Agent",
+  "version": "0.3.0",
+  "file": "samples/Vulnerable.sol",
+  "bytes": 436,
+  "lines": 25,
+  "findings": [
+    {
+      "id": "TX-ORIGIN",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "title": "tx.origin authorization",
+      "message": "tx.origin is used. Authorization should generally rely on msg.sender and explicit access control.",
+      "evidence": [
+        {
+          "line": 12,
+          "text": "require(tx.origin == owner);"
+        }
+      ]
+    },
+    {
+      "id": "SELFDESTRUCT",
+      "severity": "HIGH",
+      "confidence": "HIGH",
+      "title": "selfdestruct usage",
+      "message": "selfdestruct behavior requires explicit review because it can permanently alter contract behavior and ETH handling.",
+      "evidence": [
+        {
+          "line": 21,
+          "text": "selfdestruct(payable(msg.sender));"
+        }
+      ]
+    },
+    {
+      "id": "LOW-LEVEL-CALL",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Low-level call",
+      "message": "Low-level external call detected. Review target validation, return handling and reentrancy protection.",
+      "evidence": [
+        {
+          "line": 14,
+          "text": "(bool ok, ) = target.call(\"\");"
+        }
+      ]
+    },
+    {
+      "id": "TIMESTAMP",
+      "severity": "MEDIUM",
+      "confidence": "HIGH",
+      "title": "Block timestamp dependency",
+      "message": "block.timestamp should not be treated as secure randomness or as an exact timing source.",
+      "evidence": [
+        {
+          "line": 18,
+          "text": "uint256 t = block.timestamp;"
+        }
+      ]
+    },
+    {
+      "id": "REENTRANCY-HEURISTIC",
+      "severity": "HIGH",
+      "confidence": "LOW",
+      "title": "Possible reentrancy pattern",
+      "message": "An external interaction appears before a nearby state write. Review checks-effects-interactions ordering and reentrancy guards.",
+      "evidence": [
+        {
+          "line": 14,
+          "text": "(bool ok, ) = target.call(\"\");"
+        }
+      ]
+    },
+    {
+      "id": "ACCESS-CONTROL-REVIEW",
+      "severity": "MEDIUM",
+      "confidence": "LOW",
+      "title": "Authorization review required",
+      "message": "No obvious access-control mechanism was detected. Manually review privileged functions.",
+      "evidence": []
+    }
+  ],
+  "summary": {
+    "total": 6,
+    "critical": 0,
+    "high": 3,
+    "medium": 3,
+    "low": 0,
+    "riskScore": 33,
+    "riskLevel": "CRITICAL"
+  }
+}
