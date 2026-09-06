@@ -11,6 +11,10 @@ import {
 } from "./artifact-manifest.mjs";
 
 import {
+  resolveExplicitOrStaged
+} from "./artifact-resolver.mjs";
+
+import {
   createTrustedArtifactReference,
   verifyTrustedArtifactReference
 } from "./trusted-artifact.mjs";
@@ -24,10 +28,13 @@ const sourceFile =
 const simulation =
   process.env.PROVIDER_DAEMON_SIMULATION === "1";
 
-if (!sourceFile && !simulation) {
+const discoverStaged =
+  process.env.PROVIDER_AUTO_DISCOVER_STAGED === "1";
+
+if (!sourceFile && !simulation && !discoverStaged) {
   console.error("SOURCE_REQUIRED");
   console.error(
-    "Production mode requires an explicit Solidity source/artifact."
+    "Production mode requires an explicit Solidity source/artifact unless staged discovery is enabled."
   );
   console.error(
     "Sample fallback is disabled."
@@ -169,7 +176,7 @@ for (const [index, job] of jobs.entries()) {
 
     let requestedSource = sourceFile;
 
-    if (path.isAbsolute(requestedSource)) {
+    if (requestedSource && path.isAbsolute(requestedSource)) {
       const relative = path.relative(
         jobRoot,
         path.resolve(requestedSource)
@@ -178,30 +185,84 @@ for (const [index, job] of jobs.entries()) {
       requestedSource = relative;
     }
 
-    const routed = resolveSource(
-      jobId,
-      requestedSource
-    );
+    /*
+     * Source resolution:
+     *
+     * Explicit source:
+     *   Existing source-router path remains authoritative.
+     *
+     * No explicit source:
+     *   Staged-manifest discovery is allowed only when
+     *   PROVIDER_AUTO_DISCOVER_STAGED=1.
+     *
+     * Resolver discovery is local-only.
+     * No URL/network fetching is permitted.
+     */
+    const resolution =
+      resolveExplicitOrStaged(
+        jobId,
+        requestedSource,
+        {
+          allowDiscovery: discoverStaged
+        }
+      );
 
-    if (!routed.allowed) {
+    if (!resolution.allowed) {
       console.error(
-        `${routed.code}: ${jobId}`
+        `${resolution.code}: ${jobId}`
       );
       console.error(
-        routed.message
+        resolution.message
       );
 
       results.push({
         jobId,
         status: "BLOCKED",
-        code: routed.code,
-        message: routed.message
+        code: resolution.code,
+        message: resolution.message
       });
 
       continue;
     }
 
-    routedSource = routed.path;
+    if (
+      resolution.code ===
+      "STAGED_MANIFEST_ARTIFACT_RESOLVED"
+    ) {
+      routedSource = resolution.path;
+
+      console.log(
+        `Source discovery : ${resolution.code}`
+      );
+      console.log(
+        `Discovered source : ${resolution.relativePath}`
+      );
+    } else {
+      const routed = resolveSource(
+        jobId,
+        requestedSource
+      );
+
+      if (!routed.allowed) {
+        console.error(
+          `${routed.code}: ${jobId}`
+        );
+        console.error(
+          routed.message
+        );
+
+        results.push({
+          jobId,
+          status: "BLOCKED",
+          code: routed.code,
+          message: routed.message
+        });
+
+        continue;
+      }
+
+      routedSource = routed.path;
+    }
 
     /*
      * Artifact integrity gate:
