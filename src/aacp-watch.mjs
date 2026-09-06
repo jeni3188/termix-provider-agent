@@ -1,3 +1,6 @@
+import { observeRecovery } from "./aacp-recovery-observer.mjs";
+import { writeSnapshot } from "./aacp-job-inspector.mjs";
+
 const intervalMs =
   Number(process.env.AACP_WATCH_INTERVAL_MS || 1800000);
 
@@ -145,8 +148,29 @@ if (process.env.AACP_WATCH_TEST !== "1") {
 
     log(`Cycle ${cycle}`);
 
-    for (const event of processState(result)) {
+    const events = processState(result);
+
+    for (const event of events) {
       log(event);
+    }
+
+    if (events.includes("AACP_RECOVERED")) {
+      try {
+        const observed = await observeRecovery(fetch, {
+          previousState: "DOWN",
+          baseUrl: base,
+          timeoutMs
+        });
+
+        const snapshotFile = writeSnapshot(observed);
+
+        log(`JOB_SNAPSHOT=${snapshotFile}`);
+        log(`RECOVERY_JOBS=${observed.jobs.length}`);
+      } catch (error) {
+        log(
+          `JOB_SNAPSHOT_FAILED=${error?.message || error}`
+        );
+      }
     }
 
     if (!stopping) {
