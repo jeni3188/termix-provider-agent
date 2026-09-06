@@ -47,36 +47,201 @@ async function cycle() {
   await log("SIGNING=NOT_USED");
   await log("SUBMISSION=NOT_PERFORMED");
 
+  // ------------------------------------------------------------
+  // Step 1: Fresh AACP intake
+  // ------------------------------------------------------------
   await log("Step 1: AACP intake");
 
   const intake = await run("pnpm", ["run", "intake"]);
 
   if (intake.code !== 0) {
     await log(`INTAKE_FAILED code=${intake.code}`);
+    await log("SKIP_PROCESSING=TRUE");
+    await log("SKIP_OFFER_DRAFT=TRUE");
+    await log("LIVE_SUBMISSION=BLOCKED");
+    await log("CYCLE_COMPLETE");
     return;
   }
 
+  let intakeState;
+
+  try {
+    const raw = await (
+      await import("node:fs/promises")
+    ).readFile(
+      "provider-output/aacp-intake.json",
+      "utf8"
+    );
+
+    intakeState = JSON.parse(raw);
+  } catch (error) {
+    await log(
+      `INTAKE_STATE_READ_FAILED=${error.message}`
+    );
+    await log("SKIP_PROCESSING=TRUE");
+    await log("SKIP_OFFER_DRAFT=TRUE");
+    await log("LIVE_SUBMISSION=BLOCKED");
+    await log("CYCLE_COMPLETE");
+    return;
+  }
+
+  // ------------------------------------------------------------
+  // HARD SAFETY GATE: backend must explicitly be healthy
+  // ------------------------------------------------------------
+  if (
+    intakeState.summary?.backendAvailable !== true
+  ) {
+    await log("BACKEND_UNAVAILABLE");
+    await log("SKIP_PROCESSING=TRUE");
+    await log("SKIP_OFFER_DRAFT=TRUE");
+    await log("LIVE_SUBMISSION=BLOCKED");
+    await log("CYCLE_COMPLETE");
+    return;
+  }
+
+  const jobs = Array.isArray(intakeState.jobs)
+    ? intakeState.jobs
+    : [];
+
+  if (jobs.length === 0) {
+    await log("NO_JOBS_AVAILABLE");
+    await log("SKIP_PROCESSING=TRUE");
+    await log("SKIP_OFFER_DRAFT=TRUE");
+    await log("CYCLE_COMPLETE");
+    return;
+  }
+
+  await log(`JOBS_AVAILABLE=${jobs.length}`);
+
+  // ------------------------------------------------------------
+  // Step 2: Automatic job processing
+  // ------------------------------------------------------------
   await log("Step 2: automatic job processing");
 
-  const process = await run("pnpm", ["run", "auto"]);
+  const process = await run(
+    "pnpm",
+    ["run", "auto"]
+  );
 
   if (process.code !== 0) {
-    await log(`PROCESS_FAILED code=${process.code}`);
+    await log(
+      `AUTO_PROCESSOR_FAILED code=${process.code}`
+    );
+    await log("SKIP_OFFER_DRAFT=TRUE");
+    await log("LIVE_SUBMISSION=BLOCKED");
+    await log("CYCLE_COMPLETE");
     return;
   }
 
+  // ------------------------------------------------------------
+  // Read processor aggregate result
+  // ------------------------------------------------------------
+  let processorState;
+
+  try {
+    const raw = await (
+      await import("node:fs/promises")
+    ).readFile(
+      "provider-output/auto-processor-result.json",
+      "utf8"
+    );
+
+    processorState = JSON.parse(raw);
+  } catch (error) {
+    await log(
+      `PROCESSOR_RESULT_READ_FAILED=${error.message}`
+    );
+    await log("SKIP_OFFER_DRAFT=TRUE");
+    await log("LIVE_SUBMISSION=BLOCKED");
+    await log("CYCLE_COMPLETE");
+    return;
+  }
+
+  const results = Array.isArray(
+    processorState.results
+  )
+    ? processorState.results
+    : [];
+
+  const processed = results.filter(
+    item =>
+      item.status === "PROCESSED" &&
+      typeof item.output === "string" &&
+      item.output.length > 0
+  );
+
+  await log(
+    `PROCESSOR_RESULTS=${results.length}`
+  );
+
+  await log(
+    `PROCESSOR_SUCCESS=${processed.length}`
+  );
+
+  // ------------------------------------------------------------
+  // Step 3: Generate DRAFT ONLY offers
+  // ------------------------------------------------------------
   await log("Step 3: offer draft generation");
 
-  const draft = await run("pnpm", ["run", "offer-draft"]);
+  let drafts = 0;
+  let skipped = 0;
 
-  if (draft.code !== 0) {
-    await log(`OFFER_DRAFT_FAILED code=${draft.code}`);
-    return;
+  for (const item of processed) {
+    const processorFile = item.output;
+
+    if (!existsSync(processorFile)) {
+      skipped += 1;
+
+      await log(
+        `OFFER_DRAFT_SKIP=${item.jobId}:PROCESSOR_FILE_NOT_FOUND`
+      );
+
+      continue;
+    }
+
+    await log(
+      `OFFER_DRAFT_START=${item.jobId}`
+    );
+
+    const draft = await run(
+      "pnpm",
+      ["run", "offer-draft", processorFile]
+    );
+
+    if (draft.code === 0) {
+      drafts += 1;
+
+      await log(
+        `OFFER_DRAFT_READY=${item.jobId}`
+      );
+    } else if (draft.code === 2) {
+      skipped += 1;
+
+      await log(
+        `OFFER_DRAFT_BLOCKED=${item.jobId}:NOT_ELIGIBLE`
+      );
+    } else {
+      skipped += 1;
+
+      await log(
+        `OFFER_DRAFT_FAILED=${item.jobId} code=${draft.code}`
+      );
+    }
   }
 
-  await log("CYCLE_COMPLETE");
-  await log("MANUAL_APPROVAL_REQUIRED");
+  await log(`OFFER_DRAFT_COUNT=${drafts}`);
+  await log(`OFFER_DRAFT_SKIPPED=${skipped}`);
+
+  // ------------------------------------------------------------
+  // HARD STOP
+  // ------------------------------------------------------------
   await log("LIVE_SUBMISSION=BLOCKED");
+  await log("MANUAL_APPROVAL_REQUIRED");
+  await log("WALLET=NOT_USED");
+  await log("SIGNING=NOT_USED");
+  await log("BROADCAST=NOT_USED");
+  await log("SUBMISSION=NOT_PERFORMED");
+  await log("CYCLE_COMPLETE");
 }
 
 function shutdown(signal) {
@@ -98,7 +263,7 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 console.log("========================================");
-console.log(" PROVIDER DAEMON v1.0.0");
+console.log(" PROVIDER DAEMON v1.1.0");
 console.log("========================================");
 console.log(`Interval: ${Math.round(INTERVAL_MS / 1000)} seconds`);
 console.log("Mode    : READ-ONLY");
