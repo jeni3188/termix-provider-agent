@@ -1,5 +1,6 @@
 import { observeRecovery } from "./aacp-recovery-observer.mjs";
 import { writeSnapshot } from "./aacp-job-inspector.mjs";
+import { writeQualification } from "./aacp-job-qualifier.mjs";
 
 const intervalMs =
   Number(process.env.AACP_WATCH_INTERVAL_MS || 1800000);
@@ -166,6 +167,18 @@ if (process.env.AACP_WATCH_TEST !== "1") {
 
         log(`JOB_SNAPSHOT=${snapshotFile}`);
         log(`RECOVERY_JOBS=${observed.jobs.length}`);
+
+        const qualification = writeQualification(
+          observed.jobs
+        );
+
+        log(
+          `JOB_QUALIFICATION=${qualification.file}`
+        );
+
+        log(
+          `QUALIFIED_JOBS=${qualification.output.summary.total}`
+        );
       } catch (error) {
         log(
           `JOB_SNAPSHOT_FAILED=${error?.message || error}`

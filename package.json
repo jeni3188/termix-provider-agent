@@ -50,7 +50,9 @@
     "test:auto-staged-discovery": "node tests/auto-staged-discovery-regression.mjs",
     "test:real-job-handoff": "node tests/real-job-artifact-handoff-regression.mjs",
     "test:aacp-recovery-observer": "node tests/aacp-recovery-observer-regression.mjs",
-    "test:aacp-watch-observer-integration": "AACP_WATCH_TEST=1 node tests/aacp-watch-observer-integration-regression.mjs"
+    "test:aacp-watch-observer-integration": "AACP_WATCH_TEST=1 node tests/aacp-watch-observer-integration-regression.mjs",
+    "test:aacp-job-qualifier": "node tests/aacp-job-qualifier-regression.mjs",
+    "test:aacp-recovery-qualification": "node tests/aacp-recovery-qualification-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
