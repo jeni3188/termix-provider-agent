@@ -38,7 +38,9 @@
     "test:source-guard": "node tests/source-guard-regression.mjs",
     "test:source-router": "node tests/source-router-regression.mjs",
     "test:auto-source-routing": "node tests/auto-processor-source-routing-regression.mjs",
-    "test:artifact-manifest": "node tests/artifact-manifest-regression.mjs"
+    "test:artifact-manifest": "node tests/artifact-manifest-regression.mjs",
+    "artifact-intake": "node src/artifact-intake.mjs",
+    "test:artifact-intake": "node tests/artifact-intake-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
