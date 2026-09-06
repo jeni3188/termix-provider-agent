@@ -32,7 +32,8 @@
     "state": "node src/provider-state.mjs",
     "test:e2e": "node tests/e2e-provider-offline.mjs",
     "test:security": "node tests/security-validator.mjs",
-    "test:watch": "node tests/aacp-watch-regression.mjs"
+    "test:watch": "node tests/aacp-watch-regression.mjs",
+    "daemon": "node src/provider-daemon.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
