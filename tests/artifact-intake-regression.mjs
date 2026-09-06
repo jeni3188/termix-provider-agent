@@ -15,6 +15,28 @@ const source = path.join(
   "samples/Vulnerable.sol"
 );
 
+const jobFile = path.join(
+  "/tmp",
+  "termix-intake-regression-job.json"
+);
+
+const job = {
+  jobId,
+  status: "OPEN",
+  strategyType: "PROGRAM",
+  budget: "500000000",
+  title: "Smart Contract Security Audit",
+  description:
+    "Audit an EVM Solidity smart contract.",
+  deadline: 1799000000,
+  providerId: null
+};
+
+fs.writeFileSync(
+  jobFile,
+  JSON.stringify(job, null, 2)
+);
+
 function run(args) {
   return spawnSync(
     process.execPath,
@@ -61,7 +83,9 @@ fs.rmSync(jobRoot, {
 let result =
   run([
     jobId,
-    source
+    source,
+    "",
+    jobFile
   ]);
 
 test(
@@ -131,7 +155,9 @@ test(
 const missing =
   run([
     jobId,
-    "samples/does-not-exist.sol"
+    "samples/does-not-exist.sol",
+    "",
+    jobFile
   ]);
 
 test(
@@ -159,7 +185,9 @@ fs.writeFileSync(
 const invalidExtension =
   run([
     jobId,
-    invalidPath
+    invalidPath,
+    "",
+    jobFile
   ]);
 
 test(
@@ -182,7 +210,8 @@ const traversal =
   run([
     jobId,
     source,
-    "../../escape.sol"
+    "../../escape.sol",
+    jobFile
   ]);
 
 test(
@@ -199,7 +228,9 @@ test(
 const invalidJob =
   run([
     "../escape",
-    source
+    source,
+    "",
+    jobFile
   ]);
 
 test(
@@ -254,6 +285,11 @@ fs.rmSync(
     recursive: true,
     force: true
   }
+);
+
+fs.rmSync(
+  jobFile,
+  { force: true }
 );
 
 console.log("");

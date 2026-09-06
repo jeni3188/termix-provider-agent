@@ -5,6 +5,10 @@ import {
   resolveSource,
   getStagingPath
 } from "./source-router.mjs";
+import {
+  fingerprintJob,
+  validateJobBinding
+} from "./job-binding.mjs";
 
 const MANIFEST_NAME = "manifest.json";
 
@@ -23,7 +27,11 @@ function sha256File(file) {
   return hash.digest("hex");
 }
 
-export function createManifest(jobId, requestedPath) {
+export function createManifest(
+  jobId,
+  requestedPath,
+  job = null
+) {
   const routed = resolveSource(
     jobId,
     requestedPath
@@ -63,6 +71,15 @@ export function createManifest(jobId, requestedPath) {
       sha256: digest
     },
 
+    ...(job
+      ? {
+          jobBinding: {
+            version: "1.0.0",
+            fingerprint: fingerprintJob(job)
+          }
+        }
+      : {}),
+
     source: {
       mode: "MANUALLY_STAGED"
     },
@@ -98,7 +115,10 @@ export function createManifest(jobId, requestedPath) {
   };
 }
 
-export function verifyManifest(jobId) {
+export function verifyManifest(
+  jobId,
+  job = null
+) {
   if (
     typeof jobId !== "string" ||
     !/^[A-Za-z0-9._-]{1,128}$/.test(jobId)
@@ -147,6 +167,29 @@ export function verifyManifest(jobId) {
       "MANIFEST_JOB_MISMATCH",
       "Manifest Job ID does not match."
     );
+  }
+
+  if (job) {
+    const binding =
+      validateJobBinding(
+        manifest,
+        job
+      );
+
+    if (!binding.allowed) {
+      return reject(
+        binding.code,
+        binding.message,
+        {
+          ...(binding.expected
+            ? { expected: binding.expected }
+            : {}),
+          ...(binding.actual
+            ? { actual: binding.actual }
+            : {})
+        }
+      );
+    }
   }
 
   const artifactPath =

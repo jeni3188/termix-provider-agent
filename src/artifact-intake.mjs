@@ -27,11 +27,45 @@ function reject(code, message, extra = {}) {
   };
 }
 
-function intake(jobId, sourcePath, requestedName = null) {
+function intake(
+  jobId,
+  sourcePath,
+  requestedName = null,
+  job = null
+) {
   if (!validJobId(jobId)) {
     return reject(
       "INVALID_JOB_ID",
       "Job ID is invalid."
+    );
+  }
+
+  if (
+    !job ||
+    typeof job !== "object" ||
+    Array.isArray(job)
+  ) {
+    return reject(
+      "JOB_METADATA_REQUIRED",
+      "Job metadata is required for artifact binding."
+    );
+  }
+
+  const suppliedJobId =
+    job.jobId ??
+    job.id;
+
+  if (
+    typeof suppliedJobId !== "string" ||
+    suppliedJobId !== jobId
+  ) {
+    return reject(
+      "JOB_BINDING_ID_MISMATCH",
+      "Job metadata ID does not match the intake Job ID.",
+      {
+        jobId,
+        suppliedJobId
+      }
     );
   }
 
@@ -162,7 +196,8 @@ function intake(jobId, sourcePath, requestedName = null) {
   const manifest =
     createManifest(
       jobId,
-      relative
+      relative,
+      job
     );
 
   if (!manifest.allowed) {
@@ -173,7 +208,10 @@ function intake(jobId, sourcePath, requestedName = null) {
   }
 
   const verified =
-    verifyManifest(jobId);
+    verifyManifest(
+      jobId,
+      job
+    );
 
   if (!verified.allowed) {
     return reject(
@@ -202,7 +240,13 @@ function intake(jobId, sourcePath, requestedName = null) {
       manifest: {
         path: manifest.path,
         code: verified.code,
-        sha256: verified.manifest.artifact.sha256
+        sha256: verified.manifest.artifact.sha256,
+        jobBinding: {
+          version:
+            verified.manifest.jobBinding?.version,
+          fingerprint:
+            verified.manifest.jobBinding?.fingerprint
+        }
       }
     },
     safety: {
@@ -225,12 +269,41 @@ if (
   const jobId = process.argv[2];
   const sourcePath = process.argv[3];
   const requestedName = process.argv[4] || null;
+  const jobFile = process.argv[5];
+
+  let job = null;
+
+  if (jobFile) {
+    try {
+      job = JSON.parse(
+        fs.readFileSync(
+          path.resolve(jobFile),
+          "utf8"
+        )
+      );
+    } catch {
+      console.error(
+        JSON.stringify(
+          {
+            allowed: false,
+            code: "JOB_METADATA_INVALID",
+            message:
+              "Job metadata file could not be read or parsed."
+          },
+          null,
+          2
+        )
+      );
+      process.exit(2);
+    }
+  }
 
   const result =
     intake(
       jobId,
       sourcePath,
-      requestedName
+      requestedName,
+      job
     );
 
   console.log(
