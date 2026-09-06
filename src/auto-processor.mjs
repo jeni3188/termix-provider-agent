@@ -6,6 +6,10 @@ import {
   getStagingPath
 } from "./source-router.mjs";
 
+import {
+  verifyManifest
+} from "./artifact-manifest.mjs";
+
 const intakeFile =
   process.argv[2] || "provider-output/aacp-intake.json";
 
@@ -45,7 +49,7 @@ const intake = JSON.parse(
 
 console.log("========================================");
 console.log(" TermiX Provider Agent");
-console.log(" Auto Processor v1.7.0");
+console.log(" Auto Processor v1.8.0");
 console.log(" READ ONLY");
 console.log("========================================");
 console.log("");
@@ -193,6 +197,44 @@ for (const [index, job] of jobs.entries()) {
     }
 
     routedSource = routed.path;
+
+    /*
+     * Artifact integrity gate:
+     *
+     * Production processing is allowed only when
+     * manifest.json exists and its:
+     *   - jobId
+     *   - artifact path
+     *   - size
+     *   - SHA-256
+     * match the staged source.
+     *
+     * No analysis is performed before this check.
+     */
+    const manifestResult =
+      verifyManifest(jobId);
+
+    if (!manifestResult.allowed) {
+      console.error(
+        `SOURCE_MANIFEST_BLOCKED: ${jobId}`
+      );
+      console.error(
+        `${manifestResult.code}: ${manifestResult.message}`
+      );
+
+      results.push({
+        jobId,
+        status: "BLOCKED",
+        code: manifestResult.code,
+        message: manifestResult.message
+      });
+
+      continue;
+    }
+
+    console.log(
+      `Manifest          : ${manifestResult.code}`
+    );
   }
 
   console.log(

@@ -1,6 +1,9 @@
 import fs from "node:fs";
 import path from "node:path";
 import { spawnSync } from "node:child_process";
+import {
+  createManifest
+} from "../src/artifact-manifest.mjs";
 
 const root = process.cwd();
 
@@ -81,6 +84,19 @@ try {
     "pragma solidity ^0.8.20; contract Test {}"
   );
 
+  // Production-equivalent staging:
+  // source must be accompanied by a valid artifact manifest.
+  const manifest =
+    createManifest(
+      jobId,
+      "Contract.sol"
+    );
+
+  check(
+    "valid staged source manifest is created",
+    manifest.allowed === true
+  );
+
   fs.writeFileSync(
     intake,
     JSON.stringify({
@@ -101,7 +117,7 @@ try {
     }, null, 2)
   );
 
-  // 1. Valid staged source
+  // 1. Valid staged source + valid manifest
   const valid =
     runAuto(
       intake,
