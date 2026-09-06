@@ -33,7 +33,8 @@
     "test:e2e": "node tests/e2e-provider-offline.mjs",
     "test:security": "node tests/security-validator.mjs",
     "test:watch": "node tests/aacp-watch-regression.mjs",
-    "daemon": "node src/provider-daemon.mjs"
+    "daemon": "node src/provider-daemon.mjs",
+    "test:recovery": "node tests/provider-daemon-recovery-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"

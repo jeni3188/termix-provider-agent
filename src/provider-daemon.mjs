@@ -1,5 +1,6 @@
 import { spawn } from "node:child_process";
 import { mkdir, appendFile } from "node:fs/promises";
+import { existsSync } from "node:fs";
 
 const INTERVAL_MS = Number(
   process.env.PROVIDER_DAEMON_INTERVAL_MS || 1800000

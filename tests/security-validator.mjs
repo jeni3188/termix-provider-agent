@@ -3,10 +3,30 @@ import path from "node:path";
 import { execFileSync } from "node:child_process";
 
 const root = process.cwd();
-const approval = path.join(
+const approvalDir = path.join(
   root,
-  "provider-output/demo-security-fair-001/OFFER-APPROVAL-approval-1788625359054.json"
+  "provider-output/demo-security-fair-001"
 );
+
+const approvalFiles = fs.readdirSync(approvalDir)
+  .filter((name) =>
+    name.startsWith("OFFER-APPROVAL-approval-") &&
+    name.endsWith(".json")
+  )
+  .sort();
+
+if (approvalFiles.length === 0) {
+  console.error(`No approval artifact found: ${approvalDir}`);
+  process.exit(2);
+}
+
+const approval = path.join(
+  approvalDir,
+  approvalFiles[approvalFiles.length - 1]
+);
+
+console.log(`Approval fixture: ${path.basename(approval)}`);
+
 const validator = path.join(root, "src/aacp-validate.mjs");
 const tmpDir = "/tmp/termix-security-tests";
 
