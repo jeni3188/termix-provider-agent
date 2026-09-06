@@ -6,7 +6,29 @@ const intakeFile =
   process.argv[2] || "provider-output/aacp-intake.json";
 
 const sourceFile =
-  process.argv[3] || "samples/Vulnerable.sol";
+  process.argv[3] || null;
+
+const simulation =
+  process.env.PROVIDER_DAEMON_SIMULATION === "1";
+
+if (!sourceFile && !simulation) {
+  console.error("SOURCE_REQUIRED");
+  console.error(
+    "Production mode requires an explicit Solidity source/artifact."
+  );
+  console.error(
+    "Sample fallback is disabled."
+  );
+  process.exit(2);
+}
+
+if (!sourceFile && simulation) {
+  console.error("SIMULATION_SOURCE_REQUIRED");
+  console.error(
+    "Simulation mode also requires an explicit source file."
+  );
+  process.exit(2);
+}
 
 if (!fs.existsSync(intakeFile)) {
   console.error(`Intake file not found: ${intakeFile}`);
@@ -24,7 +46,7 @@ const intake = JSON.parse(
 
 console.log("========================================");
 console.log(" TermiX Provider Agent");
-console.log(" Auto Processor v1.5.0");
+console.log(" Auto Processor v1.6.0");
 console.log(" READ ONLY");
 console.log("========================================");
 console.log("");
