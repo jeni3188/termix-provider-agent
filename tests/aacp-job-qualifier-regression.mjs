@@ -105,8 +105,13 @@ const closedJob = {
  * First prove that metadata reference alone
  * does NOT produce a trusted artifact.
  */
+const metadataOnlyJob = {
+  ...strongJob,
+  jobId: "security-metadata-only-v2-001"
+};
+
 const metadataOnly =
-  qualifyJobs([strongJob])[0];
+  qualifyJobs([metadataOnlyJob])[0];
 
 test(
   "metadata-only source is NOT trusted",
