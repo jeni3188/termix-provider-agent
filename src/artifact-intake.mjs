@@ -8,6 +8,10 @@ import {
   createManifest,
   verifyManifest
 } from "./artifact-manifest.mjs";
+import {
+  createTrustedArtifactReference,
+  verifyTrustedArtifactReference
+} from "./trusted-artifact.mjs";
 
 const MAX_SOURCE_BYTES = 5 * 1024 * 1024;
 
@@ -193,6 +197,40 @@ function intake(
     return routed;
   }
 
+  const trustedReference =
+    createTrustedArtifactReference(
+      jobId,
+      relative
+    );
+
+  if (!trustedReference.allowed) {
+    return reject(
+      "TRUSTED_ARTIFACT_CREATION_FAILED",
+      trustedReference.message ||
+        "Trusted artifact reference creation failed.",
+      {
+        verificationCode: trustedReference.code
+      }
+    );
+  }
+
+  const trustedVerified =
+    verifyTrustedArtifactReference(
+      jobId,
+      trustedReference.reference
+    );
+
+  if (!trustedVerified.allowed) {
+    return reject(
+      "TRUSTED_ARTIFACT_VERIFICATION_FAILED",
+      trustedVerified.message ||
+        "Trusted artifact verification failed.",
+      {
+        verificationCode: trustedVerified.code
+      }
+    );
+  }
+
   const manifest =
     createManifest(
       jobId,
@@ -241,6 +279,18 @@ function intake(
         path: manifest.path,
         code: verified.code,
         sha256: verified.manifest.artifact.sha256,
+        trustedArtifact: {
+          version:
+            trustedReference.reference.version,
+          path:
+            trustedReference.reference.artifact.path,
+          size:
+            trustedReference.reference.artifact.size,
+          sha256:
+            trustedReference.reference.artifact.sha256,
+          verificationCode:
+            trustedVerified.code
+        },
         jobBinding: {
           version:
             verified.manifest.jobBinding?.version,

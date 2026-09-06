@@ -10,6 +10,11 @@ import {
   verifyManifest
 } from "./artifact-manifest.mjs";
 
+import {
+  createTrustedArtifactReference,
+  verifyTrustedArtifactReference
+} from "./trusted-artifact.mjs";
+
 const intakeFile =
   process.argv[2] || "provider-output/aacp-intake.json";
 
@@ -235,6 +240,109 @@ for (const [index, job] of jobs.entries()) {
 
     console.log(
       `Manifest          : ${manifestResult.code}`
+    );
+
+    /*
+     * Trusted artifact integrity gate:
+     *
+     * The manifest proves the staged artifact and immutable
+     * Job metadata are bound together.
+     *
+     * Trusted Artifact verification independently confirms:
+     *   - local staging path
+     *   - artifact size
+     *   - artifact SHA-256
+     *
+     * This gate MUST pass before job-processor/analyzer runs.
+     *
+     * No network fetch, wallet, signing, or broadcast occurs.
+     */
+    const trustedReference =
+      createTrustedArtifactReference(
+        jobId,
+        path.relative(
+          jobRoot,
+          routedSource
+        )
+      );
+
+    if (!trustedReference.allowed) {
+      console.error(
+        `TRUSTED_ARTIFACT_BLOCKED: ${jobId}`
+      );
+      console.error(
+        `${trustedReference.code}: ${trustedReference.message}`
+      );
+
+      results.push({
+        jobId,
+        status: "BLOCKED",
+        code: trustedReference.code,
+        message: trustedReference.message
+      });
+
+      continue;
+    }
+
+    const trustedVerification =
+      verifyTrustedArtifactReference(
+        jobId,
+        trustedReference.reference
+      );
+
+    if (!trustedVerification.allowed) {
+      console.error(
+        `TRUSTED_ARTIFACT_BLOCKED: ${jobId}`
+      );
+      console.error(
+        `${trustedVerification.code}: ${trustedVerification.message}`
+      );
+
+      results.push({
+        jobId,
+        status: "BLOCKED",
+        code: trustedVerification.code,
+        message: trustedVerification.message
+      });
+
+      continue;
+    }
+
+    /*
+     * Cross-check trusted artifact against the already
+     * verified manifest. This prevents the two integrity
+     * layers from silently referring to different artifacts.
+     */
+    const manifestArtifact =
+      manifestResult.manifest?.artifact;
+
+    const trustedArtifact =
+      trustedReference.reference?.artifact;
+
+    if (
+      !manifestArtifact ||
+      !trustedArtifact ||
+      manifestArtifact.path !== trustedArtifact.path ||
+      manifestArtifact.size !== trustedArtifact.size ||
+      manifestArtifact.sha256 !== trustedArtifact.sha256
+    ) {
+      console.error(
+        `TRUSTED_ARTIFACT_MANIFEST_MISMATCH: ${jobId}`
+      );
+
+      results.push({
+        jobId,
+        status: "BLOCKED",
+        code: "TRUSTED_ARTIFACT_MANIFEST_MISMATCH",
+        message:
+          "Trusted artifact reference does not match the verified manifest."
+      });
+
+      continue;
+    }
+
+    console.log(
+      `Trusted Artifact  : ${trustedVerification.code}`
     );
   }
 
