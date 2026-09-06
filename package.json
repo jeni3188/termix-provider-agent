@@ -47,7 +47,8 @@
     "test:trusted-artifact": "node tests/trusted-artifact-regression.mjs",
     "test:trusted-intake": "node tests/trusted-artifact-intake-regression.mjs",
     "test:artifact-resolver": "node tests/artifact-resolver-regression.mjs",
-    "test:auto-staged-discovery": "node tests/auto-staged-discovery-regression.mjs"
+    "test:auto-staged-discovery": "node tests/auto-staged-discovery-regression.mjs",
+    "test:real-job-handoff": "node tests/real-job-artifact-handoff-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
