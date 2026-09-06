@@ -6,6 +6,15 @@ const INTERVAL_MS = Number(
   process.env.PROVIDER_DAEMON_INTERVAL_MS || 1800000
 );
 
+const SIMULATION =
+  process.env.PROVIDER_DAEMON_SIMULATION === "1";
+
+const SIMULATION_DIR =
+  process.env.PROVIDER_DAEMON_SIMULATION_DIR ||
+  "/tmp/termix-daemon-recovery";
+
+let cycleNumber = 0;
+
 const LOG_DIR = "provider-output/daemon";
 const LOG_FILE = `${LOG_DIR}/daemon.log`;
 
@@ -40,7 +49,60 @@ function run(command, args = []) {
   });
 }
 
+async function readJson(file) {
+  const raw = await (
+    await import("node:fs/promises")
+  ).readFile(file, "utf8");
+
+  return JSON.parse(raw);
+}
+
+async function loadIntakeState() {
+  if (SIMULATION) {
+    const fixtures = [
+      "down.json",
+      "down.json",
+      "healthy.json"
+    ];
+
+    const index = Math.min(
+      Math.max(cycleNumber - 1, 0),
+      fixtures.length - 1
+    );
+
+    const file = `${SIMULATION_DIR}/${fixtures[index]}`;
+
+    await log("SIMULATION=TRUE");
+    await log(`SIMULATION_FIXTURE=${file}`);
+
+    return {
+      state: await readJson(file),
+      file
+    };
+  }
+
+  const intake = await run(
+    "pnpm",
+    ["run", "intake"]
+  );
+
+  if (intake.code !== 0) {
+    throw new Error(
+      `INTAKE_FAILED code=${intake.code}`
+    );
+  }
+
+  const file =
+    "provider-output/aacp-intake.json";
+
+  return {
+    state: await readJson(file),
+    file
+  };
+}
+
 async function cycle() {
+  cycleNumber += 1;
   await log("========================================");
   await log("PROVIDER DAEMON CYCLE");
   await log("MODE=READ_ONLY");
@@ -50,32 +112,18 @@ async function cycle() {
   await log("SUBMISSION=NOT_PERFORMED");
 
   // ------------------------------------------------------------
-  // Step 1: Fresh AACP intake
+  // Step 1: AACP intake
   // ------------------------------------------------------------
   await log("Step 1: AACP intake");
 
-  const intake = await run("pnpm", ["run", "intake"]);
-
-  if (intake.code !== 0) {
-    await log(`INTAKE_FAILED code=${intake.code}`);
-    await log("SKIP_PROCESSING=TRUE");
-    await log("SKIP_OFFER_DRAFT=TRUE");
-    await log("LIVE_SUBMISSION=BLOCKED");
-    await log("CYCLE_COMPLETE");
-    return;
-  }
-
   let intakeState;
+  let intakeFile;
 
   try {
-    const raw = await (
-      await import("node:fs/promises")
-    ).readFile(
-      "provider-output/aacp-intake.json",
-      "utf8"
-    );
+    const intakeResult = await loadIntakeState();
 
-    intakeState = JSON.parse(raw);
+    intakeState = intakeResult.state;
+    intakeFile = intakeResult.file;
   } catch (error) {
     await log(
       `INTAKE_STATE_READ_FAILED=${error.message}`
@@ -145,9 +193,19 @@ async function cycle() {
   // ------------------------------------------------------------
   await log("Step 2: automatic job processing");
 
+  const autoArgs = SIMULATION
+    ? ["run", "auto", intakeFile, "samples/Vulnerable.sol"]
+    : ["run", "auto"];
+
+  await log(
+    SIMULATION
+      ? `AUTO_INPUT=${intakeFile}`
+      : "AUTO_INPUT=provider-output/aacp-intake.json"
+  );
+
   const process = await run(
     "pnpm",
-    ["run", "auto"]
+    autoArgs
   );
 
   if (process.code !== 0) {
