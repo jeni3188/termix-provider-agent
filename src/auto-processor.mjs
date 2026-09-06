@@ -207,12 +207,13 @@ for (const [index, job] of jobs.entries()) {
      *   - artifact path
      *   - size
      *   - SHA-256
-     * match the staged source.
+     *   - immutable Job metadata fingerprint
+     * match the staged source and current job.
      *
      * No analysis is performed before this check.
      */
     const manifestResult =
-      verifyManifest(jobId);
+      verifyManifest(jobId, job);
 
     if (!manifestResult.allowed) {
       console.error(

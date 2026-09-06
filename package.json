@@ -42,7 +42,8 @@
     "artifact-intake": "node src/artifact-intake.mjs",
     "test:artifact-intake": "node tests/artifact-intake-regression.mjs",
     "test:job-binding": "node tests/job-binding-regression.mjs",
-    "test:job-artifact-binding": "node tests/job-artifact-binding-regression.mjs"
+    "test:job-artifact-binding": "node tests/job-artifact-binding-regression.mjs",
+    "test:auto-job-binding": "node tests/auto-job-binding-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"

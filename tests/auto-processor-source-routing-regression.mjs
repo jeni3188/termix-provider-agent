@@ -85,11 +85,24 @@ try {
   );
 
   // Production-equivalent staging:
-  // source must be accompanied by a valid artifact manifest.
+  // source must be accompanied by a valid artifact manifest
+  // bound to the exact Job metadata used by the processor.
+  const job = {
+    jobId,
+    status: "OPEN",
+    strategyType: "PROGRAM",
+    budget: "500000000",
+    title: "Source Routing Regression",
+    description: "Test",
+    deadline: 1799000000,
+    providerId: null
+  };
+
   const manifest =
     createManifest(
       jobId,
-      "Contract.sol"
+      "Contract.sol",
+      job
     );
 
   check(
@@ -104,15 +117,7 @@ try {
         backendAvailable: true
       },
       jobs: [
-        {
-          jobId,
-          status: "OPEN",
-          strategyType: "PROGRAM",
-          budget: "500000000",
-          title: "Source Routing Regression",
-          description: "Test",
-          providerId: null
-        }
+        job
       ]
     }, null, 2)
   );
