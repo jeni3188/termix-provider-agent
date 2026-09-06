@@ -35,7 +35,9 @@
     "test:watch": "node tests/aacp-watch-regression.mjs",
     "daemon": "node src/provider-daemon.mjs",
     "test:recovery": "node tests/provider-daemon-recovery-regression.mjs",
-    "test:source-guard": "node tests/source-guard-regression.mjs"
+    "test:source-guard": "node tests/source-guard-regression.mjs",
+    "test:source-router": "node tests/source-router-regression.mjs",
+    "test:auto-source-routing": "node tests/auto-processor-source-routing-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"

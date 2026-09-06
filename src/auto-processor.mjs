@@ -1,6 +1,10 @@
 import fs from "fs";
 import path from "path";
 import { execFileSync } from "child_process";
+import {
+  resolveSource,
+  getStagingPath
+} from "./source-router.mjs";
 
 const intakeFile =
   process.argv[2] || "provider-output/aacp-intake.json";
@@ -35,18 +39,13 @@ if (!fs.existsSync(intakeFile)) {
   process.exit(1);
 }
 
-if (!fs.existsSync(sourceFile)) {
-  console.error(`Source file not found: ${sourceFile}`);
-  process.exit(1);
-}
-
 const intake = JSON.parse(
   fs.readFileSync(intakeFile, "utf8")
 );
 
 console.log("========================================");
 console.log(" TermiX Provider Agent");
-console.log(" Auto Processor v1.6.0");
+console.log(" Auto Processor v1.7.0");
 console.log(" READ ONLY");
 console.log("========================================");
 console.log("");
@@ -85,9 +84,119 @@ for (const [index, job] of jobs.entries()) {
     job.id ??
     `job-${index + 1}`;
 
+  if (
+    typeof jobId !== "string" ||
+    !/^[A-Za-z0-9._-]{1,128}$/.test(jobId)
+  ) {
+    console.error(
+      `INVALID_JOB_ID: ${String(jobId)}`
+    );
+
+    results.push({
+      jobId: String(jobId),
+      status: "BLOCKED",
+      code: "INVALID_JOB_ID"
+    });
+
+    continue;
+  }
+
   console.log("");
   console.log(
     `[${index + 1}/${jobs.length}] Processing ${jobId}`
+  );
+
+  /*
+   * Source routing:
+   *
+   * Production:
+   *   explicit CLI source is allowed only when it resolves
+   *   inside the job staging directory.
+   *
+   * Simulation:
+   *   explicit source remains supported for deterministic tests.
+   *
+   * No implicit sample fallback is permitted.
+   */
+
+  let routedSource = sourceFile;
+
+  if (simulation) {
+    if (!routedSource) {
+      console.error(
+        `SOURCE_ARTIFACT_REQUIRED: ${jobId}`
+      );
+
+      results.push({
+        jobId,
+        status: "BLOCKED",
+        code: "SOURCE_ARTIFACT_REQUIRED"
+      });
+
+      continue;
+    }
+
+    if (!fs.existsSync(routedSource)) {
+      console.error(
+        `SOURCE_REJECTED: source does not exist: ${routedSource}`
+      );
+
+      results.push({
+        jobId,
+        status: "BLOCKED",
+        code: "SOURCE_REJECTED"
+      });
+
+      continue;
+    }
+  } else {
+    /*
+     * Production source must be staged per job.
+     *
+     * The CLI source is treated as a relative filename
+     * inside provider-output/source-staging/<jobId>.
+     */
+    const jobRoot = getStagingPath(jobId);
+
+    let requestedSource = sourceFile;
+
+    if (path.isAbsolute(requestedSource)) {
+      const relative = path.relative(
+        jobRoot,
+        path.resolve(requestedSource)
+      );
+
+      requestedSource = relative;
+    }
+
+    const routed = resolveSource(
+      jobId,
+      requestedSource
+    );
+
+    if (!routed.allowed) {
+      console.error(
+        `${routed.code}: ${jobId}`
+      );
+      console.error(
+        routed.message
+      );
+
+      results.push({
+        jobId,
+        status: "BLOCKED",
+        code: routed.code,
+        message: routed.message
+      });
+
+      continue;
+    }
+
+    routedSource = routed.path;
+  }
+
+  console.log(
+    `Source            : ${routedSource}`
   );
 
   const tempFile = path.join(
@@ -106,7 +215,7 @@ for (const [index, job] of jobs.entries()) {
       [
         "src/job-processor.mjs",
         tempFile,
-        sourceFile
+        routedSource
       ],
       {
         encoding: "utf8"
@@ -151,7 +260,7 @@ for (const [index, job] of jobs.entries()) {
 
 const result = {
   processor: "TermiX Auto Processor",
-  version: "1.5.0",
+  version: "1.7.0",
 
   intake: {
     backendAvailable:
