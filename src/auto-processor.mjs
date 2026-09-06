@@ -472,7 +472,7 @@ for (const [index, job] of jobs.entries()) {
 
 const result = {
   processor: "TermiX Auto Processor",
-  version: "1.7.0",
+  version: "1.8.0",
 
   intake: {
     backendAvailable:
