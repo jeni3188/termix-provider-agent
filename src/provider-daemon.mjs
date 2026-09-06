@@ -10,6 +10,7 @@ const LOG_DIR = "provider-output/daemon";
 const LOG_FILE = `${LOG_DIR}/daemon.log`;
 
 let stopping = false;
+let previousBackendState = null;
 
 function ts() {
   return new Date().toISOString();
@@ -87,11 +88,32 @@ async function cycle() {
   }
 
   // ------------------------------------------------------------
+  // Backend state + recovery detection
+  // ------------------------------------------------------------
+  const backendHealthy =
+    intakeState.summary?.backendAvailable === true;
+
+  const backendState =
+    backendHealthy ? "HEALTHY" : "DOWN";
+
+  await log(`AACP_STATE=${backendState}`);
+
+  const recovered =
+    previousBackendState === "DOWN" &&
+    backendState === "HEALTHY";
+
+  if (recovered) {
+    await log("AACP_RECOVERED");
+    await log("ACTION=READ_ONLY_DISCOVERY_ALLOWED");
+    await log("RECOVERY_MODE=SAFE");
+  }
+
+  previousBackendState = backendState;
+
+  // ------------------------------------------------------------
   // HARD SAFETY GATE: backend must explicitly be healthy
   // ------------------------------------------------------------
-  if (
-    intakeState.summary?.backendAvailable !== true
-  ) {
+  if (!backendHealthy) {
     await log("BACKEND_UNAVAILABLE");
     await log("SKIP_PROCESSING=TRUE");
     await log("SKIP_OFFER_DRAFT=TRUE");
@@ -99,6 +121,10 @@ async function cycle() {
     await log("CYCLE_COMPLETE");
     return;
   }
+
+  await log("DISCOVERY=READ_ONLY");
+  await log("PROCESS=ALLOWED");
+  await log("OFFER_DRAFT=ALLOWED");
 
   const jobs = Array.isArray(intakeState.jobs)
     ? intakeState.jobs
@@ -264,7 +290,7 @@ process.on("SIGINT", () => shutdown("SIGINT"));
 process.on("SIGTERM", () => shutdown("SIGTERM"));
 
 console.log("========================================");
-console.log(" PROVIDER DAEMON v1.1.0");
+console.log(" PROVIDER DAEMON v1.2.0");
 console.log("========================================");
 console.log(`Interval: ${Math.round(INTERVAL_MS / 1000)} seconds`);
 console.log("Mode    : READ-ONLY");
