@@ -1,3 +1,10 @@
+import fs from "node:fs";
+import path from "node:path";
+
+const DEFAULT_OUTPUT_DIR =
+  process.env.AACP_OBSERVER_OUTPUT ||
+  "provider-output/aacp-observer";
+
 const READ_ONLY_SAFETY = {
   postPerformed: false,
   walletUsed: false,
@@ -7,7 +14,33 @@ const READ_ONLY_SAFETY = {
 };
 
 function normalizeJob(job) {
-  const q = job?.qualification ?? {};
+  const nested =
+    job?.qualification &&
+    typeof job.qualification === "object"
+      ? job.qualification
+      : null;
+
+  const qualification =
+    nested?.qualification ??
+    (
+      typeof job?.qualification === "string"
+        ? job.qualification
+        : "MANUAL_REVIEW"
+    );
+
+  const score =
+    nested?.score ??
+    job?.score ??
+    0;
+
+  const artifact =
+    nested?.artifactStatus ??
+    job?.artifactStatus ??
+    "NO_ARTIFACT";
+
+  const trusted =
+    nested?.artifactTrusted === true ||
+    job?.artifactTrusted === true;
 
   return {
     jobId: job?.jobId ?? job?.id ?? null,
@@ -17,13 +50,13 @@ function normalizeJob(job) {
     description: job?.description ?? null,
     budget: job?.budget ?? null,
 
-    qualification: q.qualification ?? "MANUAL_REVIEW",
-    score: Number.isFinite(Number(q.score))
-      ? Number(q.score)
+    qualification,
+    score: Number.isFinite(Number(score))
+      ? Number(score)
       : 0,
 
-    artifact: q.artifactStatus ?? "NO_ARTIFACT",
-    trusted: q.artifactTrusted === true
+    artifact,
+    trusted
   };
 }
 
@@ -110,5 +143,30 @@ export function buildQualifiedJobReport({
       broadcastPerformed: safety.broadcastPerformed === true,
       submissionPerformed: safety.submissionPerformed === true
     }
+  };
+}
+
+
+export function writeQualifiedJobReport(
+  input,
+  outputDir = DEFAULT_OUTPUT_DIR
+) {
+  const report = buildQualifiedJobReport(input);
+
+  fs.mkdirSync(outputDir, { recursive: true });
+
+  const file = path.join(
+    outputDir,
+    "latest-qualified-job-report.json"
+  );
+
+  fs.writeFileSync(
+    file,
+    JSON.stringify(report, null, 2) + "\n"
+  );
+
+  return {
+    file,
+    report
   };
 }

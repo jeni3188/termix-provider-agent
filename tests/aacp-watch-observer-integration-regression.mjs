@@ -6,6 +6,8 @@ import path from "node:path";
 import { check, processState } from "../src/aacp-watch.mjs";
 import { observeRecovery } from "../src/aacp-recovery-observer.mjs";
 import { writeSnapshot } from "../src/aacp-job-inspector.mjs";
+import { writeQualification } from "../src/aacp-job-qualifier.mjs";
+import { writeQualifiedJobReport } from "../src/aacp-qualified-job-report.mjs";
 
 console.log("========================================");
 console.log(" AACP WATCH → OBSERVER INTEGRATION");
@@ -141,6 +143,8 @@ try {
 
 let observed;
 let snapshotFile;
+let qualificationFile;
+let qualifiedReportFile;
 
 try {
   observed = await observeRecovery(
@@ -165,11 +169,11 @@ try {
   fail("recovery observer captures recovered job", error);
 }
 
-try {
-  const tempDir = fs.mkdtempSync(
-    path.join(os.tmpdir(), "termix-observer-")
-  );
+const tempDir = fs.mkdtempSync(
+  path.join(os.tmpdir(), "termix-observer-")
+);
 
+try {
   snapshotFile = writeSnapshot(
     observed,
     tempDir
@@ -193,6 +197,130 @@ try {
   pass("job snapshot written successfully");
 } catch (error) {
   fail("job snapshot written successfully", error);
+}
+
+try {
+  const qualification = writeQualification(
+    observed.jobs,
+    tempDir
+  );
+
+  qualificationFile = qualification.file;
+
+  assert.ok(
+    fs.existsSync(qualificationFile)
+  );
+
+  assert.equal(
+    qualification.output.jobs.length,
+    1
+  );
+
+  assert.equal(
+    qualification.output.jobs[0].qualification,
+    "ARTIFACT_MISSING"
+  );
+
+  assert.equal(
+    qualification.output.jobs[0].artifactTrusted,
+    false
+  );
+
+  pass("qualification result preserved");
+} catch (error) {
+  fail("qualification result preserved", error);
+}
+
+try {
+  const qualification = JSON.parse(
+    fs.readFileSync(
+      qualificationFile,
+      "utf8"
+    )
+  );
+
+  const qualifiedReport =
+    writeQualifiedJobReport(
+      {
+        state: observed.state,
+        previousState: observed.previousState,
+        recovered: observed.recovered,
+        jobs: qualification.jobs,
+        safety: qualification.safety
+      },
+      tempDir
+    );
+
+  qualifiedReportFile =
+    qualifiedReport.file;
+
+  assert.ok(
+    fs.existsSync(qualifiedReportFile)
+  );
+
+  const report = JSON.parse(
+    fs.readFileSync(
+      qualifiedReportFile,
+      "utf8"
+    )
+  );
+
+  assert.equal(
+    report.mode,
+    "READ_ONLY"
+  );
+
+  assert.equal(
+    report.version,
+    "3.0.0"
+  );
+
+  assert.equal(
+    report.summary.observed,
+    1
+  );
+
+  assert.equal(
+    report.summary.unique,
+    1
+  );
+
+  assert.equal(
+    report.summary.qualified,
+    0
+  );
+
+  assert.equal(
+    report.summary.blocked,
+    1
+  );
+
+  assert.equal(
+    report.blocked[0].jobId,
+    "integration-security-001"
+  );
+
+  assert.equal(
+    report.blocked[0].reason,
+    "ARTIFACT_MISSING"
+  );
+
+  assert.equal(
+    report.blocked[0].artifact,
+    "NO_ARTIFACT"
+  );
+
+  assert.equal(
+    report.blocked[0].trusted,
+    false
+  );
+
+  pass("qualified job report written and qualification preserved");
+} catch (error) {
+  fail(
+    "qualified job report written and qualification preserved",
+    error
+  );
 }
 
 try {
