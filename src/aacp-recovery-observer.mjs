@@ -133,6 +133,68 @@ function normalizeJobs(payload) {
   };
 }
 
+function validateJobShape(job) {
+  if (!job || typeof job !== "object" || Array.isArray(job)) {
+    return {
+      valid: false,
+      code: "JOB_NOT_OBJECT"
+    };
+  }
+
+  const id =
+    job.jobId ??
+    job.id ??
+    null;
+
+  if (
+    typeof id !== "string" ||
+    id.trim() === ""
+  ) {
+    return {
+      valid: false,
+      code: "JOB_ID_MISSING"
+    };
+  }
+
+  const status =
+    String(job.status || "").toUpperCase();
+
+  if (
+    !["OPEN", "FUNDED"].includes(status)
+  ) {
+    return {
+      valid: false,
+      code: "JOB_STATUS_INVALID"
+    };
+  }
+
+  return {
+    valid: true,
+    code: null
+  };
+}
+
+function validateJobs(jobs) {
+  const invalid = [];
+
+  for (let index = 0; index < jobs.length; index++) {
+    const validation =
+      validateJobShape(jobs[index]);
+
+    if (!validation.valid) {
+      invalid.push({
+        index,
+        code: validation.code
+      });
+    }
+  }
+
+  return {
+    valid: invalid.length === 0,
+    invalid
+  };
+}
+
 function dedupeJobs(jobs) {
   const seen = new Set();
   const result = [];
@@ -266,10 +328,46 @@ export async function observeRecovery(
     };
   }
 
-  const jobs = dedupeJobs([
+  const combinedJobs = [
     ...openResult.jobs,
     ...fundedResult.jobs
-  ]);
+  ];
+
+  const jobValidation =
+    validateJobs(combinedJobs);
+
+  /*
+   * HTTP 200 + recognized container schema is still
+   * insufficient for recovery. Every individual job
+   * must have a valid identity and supported status.
+   *
+   * Fail closed on the first malformed job set.
+   */
+  if (!jobValidation.valid) {
+    return {
+      recovered: false,
+      previousState,
+      state: "BLOCKED",
+      config,
+      endpoints: {
+        open: {
+          ...open,
+          schemaValid: true,
+          schemaError: null
+        },
+        funded: {
+          ...funded,
+          schemaValid: true,
+          schemaError: null
+        }
+      },
+      jobs: [],
+      invalidJobs: jobValidation.invalid,
+      safety
+    };
+  }
+
+  const jobs = dedupeJobs(combinedJobs);
 
   const state = "HEALTHY";
 

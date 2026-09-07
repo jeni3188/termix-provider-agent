@@ -511,5 +511,293 @@ console.log("PASS: submission never performed");
   );
 }
 
+
+/* --------------------------------------------------------- */
+/* TEST 6 — OPEN job missing ID must fail closed             */
+/* --------------------------------------------------------- */
+
+{
+  const calls = [];
+
+  const fetchMock = async (url, options = {}) => {
+    calls.push({
+      url: String(url),
+      method: options.method ?? "GET"
+    });
+
+    if (String(url).includes("/api/v1/config")) {
+      return new Response(
+        JSON.stringify({ chainId: 97 }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (String(url).includes("/api/v1/jobs?status=OPEN")) {
+      return new Response(
+        JSON.stringify({
+          jobs: [
+            {
+              status: "OPEN",
+              title: "Malformed job"
+            }
+          ]
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (String(url).includes("/api/v1/jobs?status=FUNDED")) {
+      return new Response(
+        JSON.stringify({ jobs: [] }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    return new Response("not found", { status: 404 });
+  };
+
+  const result =
+    await observeRecovery(fetchMock, {
+      previousState: "DOWN"
+    });
+
+  assert.equal(result.state, "BLOCKED");
+  assert.equal(result.recovered, false);
+  assert.equal(result.jobs.length, 0);
+  assert.deepEqual(result.invalidJobs, [
+    {
+      index: 0,
+      code: "JOB_ID_MISSING"
+    }
+  ]);
+
+  assert.ok(
+    calls.every((call) => call.method === "GET")
+  );
+
+  assert.equal(result.safety.postPerformed, false);
+
+  console.log(
+    "PASS: OPEN job without ID fails closed"
+  );
+}
+
+/* --------------------------------------------------------- */
+/* TEST 7 — FUNDED job invalid status must fail closed       */
+/* --------------------------------------------------------- */
+
+{
+  const calls = [];
+
+  const fetchMock = async (url, options = {}) => {
+    calls.push({
+      url: String(url),
+      method: options.method ?? "GET"
+    });
+
+    if (String(url).includes("/api/v1/config")) {
+      return new Response(
+        JSON.stringify({ chainId: 97 }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (String(url).includes("/api/v1/jobs?status=OPEN")) {
+      return new Response(
+        JSON.stringify({ jobs: [] }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (String(url).includes("/api/v1/jobs?status=FUNDED")) {
+      return new Response(
+        JSON.stringify({
+          jobs: [
+            {
+              jobId: "funded-invalid-status",
+              status: "UNKNOWN"
+            }
+          ]
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    return new Response("not found", { status: 404 });
+  };
+
+  const result =
+    await observeRecovery(fetchMock, {
+      previousState: "DOWN"
+    });
+
+  assert.equal(result.state, "BLOCKED");
+  assert.equal(result.recovered, false);
+  assert.equal(result.jobs.length, 0);
+
+  assert.deepEqual(result.invalidJobs, [
+    {
+      index: 0,
+      code: "JOB_STATUS_INVALID"
+    }
+  ]);
+
+  assert.ok(
+    calls.every((call) => call.method === "GET")
+  );
+
+  assert.equal(result.safety.postPerformed, false);
+
+  console.log(
+    "PASS: FUNDED job with invalid status fails closed"
+  );
+}
+
+/* --------------------------------------------------------- */
+/* TEST 8 — null job must fail closed                        */
+/* --------------------------------------------------------- */
+
+{
+  const fetchMock = async (url, options = {}) => {
+    if (String(url).includes("/api/v1/config")) {
+      return new Response(
+        JSON.stringify({ chainId: 97 }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (String(url).includes("/api/v1/jobs?status=OPEN")) {
+      return new Response(
+        JSON.stringify({
+          jobs: [null]
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (String(url).includes("/api/v1/jobs?status=FUNDED")) {
+      return new Response(
+        JSON.stringify({ jobs: [] }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    return new Response("not found", { status: 404 });
+  };
+
+  const result =
+    await observeRecovery(fetchMock, {
+      previousState: "DOWN"
+    });
+
+  assert.equal(result.state, "BLOCKED");
+  assert.equal(result.recovered, false);
+  assert.equal(result.jobs.length, 0);
+
+  assert.deepEqual(result.invalidJobs, [
+    {
+      index: 0,
+      code: "JOB_NOT_OBJECT"
+    }
+  ]);
+
+  assert.equal(result.safety.postPerformed, false);
+
+  console.log(
+    "PASS: null job fails closed"
+  );
+}
+
+/* --------------------------------------------------------- */
+/* TEST 9 — non-object job must fail closed                  */
+/* --------------------------------------------------------- */
+
+{
+  const fetchMock = async (url, options = {}) => {
+    if (String(url).includes("/api/v1/config")) {
+      return new Response(
+        JSON.stringify({ chainId: 97 }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (String(url).includes("/api/v1/jobs?status=OPEN")) {
+      return new Response(
+        JSON.stringify({
+          jobs: ["malformed-job"]
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (String(url).includes("/api/v1/jobs?status=FUNDED")) {
+      return new Response(
+        JSON.stringify({ jobs: [] }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    return new Response("not found", { status: 404 });
+  };
+
+  const result =
+    await observeRecovery(fetchMock, {
+      previousState: "DOWN"
+    });
+
+  assert.equal(result.state, "BLOCKED");
+  assert.equal(result.recovered, false);
+  assert.equal(result.jobs.length, 0);
+
+  assert.deepEqual(result.invalidJobs, [
+    {
+      index: 0,
+      code: "JOB_NOT_OBJECT"
+    }
+  ]);
+
+  assert.equal(result.safety.postPerformed, false);
+
+  console.log(
+    "PASS: non-object job fails closed"
+  );
+}
+
 console.log("");
 console.log("AACP RECOVERY OBSERVER REGRESSION PASSED");
