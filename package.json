@@ -48,7 +48,18 @@
     "test:trusted-intake": "node tests/trusted-artifact-intake-regression.mjs",
     "test:artifact-resolver": "node tests/artifact-resolver-regression.mjs",
     "test:auto-staged-discovery": "node tests/auto-staged-discovery-regression.mjs",
-    "test:real-job-handoff": "node tests/real-job-artifact-handoff-regression.mjs"
+    "test:real-job-handoff": "node tests/real-job-artifact-handoff-regression.mjs",
+    "test:aacp-recovery-observer": "node tests/aacp-recovery-observer-regression.mjs",
+    "test:aacp-watch-observer-integration": "AACP_WATCH_TEST=1 node tests/aacp-watch-observer-integration-regression.mjs",
+    "test:aacp-job-qualifier": "node tests/aacp-job-qualifier-regression.mjs",
+    "test:aacp-recovery-qualification": "node tests/aacp-recovery-qualification-regression.mjs",
+    "test:analysis-gate": "node tests/analysis-gate-regression.mjs",
+    "deliverable-gate": "node src/deliverable-gate.mjs",
+    "test:deliverable-gate": "node tests/deliverable-gate-regression.mjs",
+    "test:aacp-preflight": "node tests/aacp-preflight-regression.mjs",
+    "aacp-readonly-discovery": "node src/aacp-readonly-discovery.mjs",
+    "test:aacp-readonly-discovery": "node tests/aacp-readonly-discovery-regression.mjs",
+    "test:aacp-qualified-job-report": "node tests/aacp-qualified-job-report-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"

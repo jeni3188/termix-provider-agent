@@ -93,6 +93,28 @@ export function resolveSource(jobId, requestedPath) {
     );
   }
 
+  let canonicalRoot;
+  let canonicalCandidate;
+
+  try {
+    canonicalRoot = fs.realpathSync(jobRoot);
+    canonicalCandidate = fs.realpathSync(candidate);
+  } catch {
+    return reject(
+      "SOURCE_REJECTED",
+      "Source/artifact could not be canonically resolved.",
+      { reason: "REALPATH_RESOLUTION_FAILED" }
+    );
+  }
+
+  if (!isInside(canonicalRoot, canonicalCandidate)) {
+    return reject(
+      "SOURCE_REJECTED",
+      "Source/artifact resolves outside the job staging directory.",
+      { reason: "SYMLINK_ESCAPE_OR_OUTSIDE_STAGING" }
+    );
+  }
+
   const stat = fs.statSync(candidate);
 
   if (!stat.isFile()) {
