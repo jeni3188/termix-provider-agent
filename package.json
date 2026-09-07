@@ -61,7 +61,9 @@
     "test:aacp-readonly-discovery": "node tests/aacp-readonly-discovery-regression.mjs",
     "test:aacp-qualified-job-report": "node tests/aacp-qualified-job-report-regression.mjs",
     "provider:qualify": "node src/provider-qualification.mjs",
-    "provider:status": "node src/provider-status.mjs"
+    "provider:status": "node src/provider-status.mjs",
+    "provider:observe": "node src/provider-observer.mjs",
+    "test:provider-observer": "node tests/provider-observer-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
