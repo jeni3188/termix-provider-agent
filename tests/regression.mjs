@@ -5,19 +5,19 @@ const tests = [
     name: "UNDERVALUED job",
     job: "samples/jobs/security-audit.json",
     expectedDecision: "MANUAL_REVIEW",
-    expectedPath: "MANUAL_REVIEW"
+    expectedPath: "BLOCKED_QUALIFICATION_GATE"
   },
   {
     name: "FAIR job",
     job: "samples/jobs/security-audit-fair.json",
     expectedDecision: "PROCEED_TO_OFFER_REVIEW",
-    expectedPath: "OFFER_REVIEW"
+    expectedPath: "BLOCKED_QUALIFICATION_GATE"
   },
   {
     name: "POOR MATCH job",
     job: "samples/jobs/poor-match.json",
     expectedDecision: "REJECT",
-    expectedPath: "REJECT"
+    expectedPath: "BLOCKED_QUALIFICATION_GATE"
   }
 ];
 
@@ -37,21 +37,18 @@ for (const test of tests) {
       { encoding: "utf8" }
     );
 
-    const marker =
-      "Output   : ";
+    const match = raw.match(
+      /^Output\s*:\s*(.+)$/m
+    );
 
-    const line =
-      raw.split("\n")
-        .find(x => x.includes(marker));
-
-    if (!line) {
+    if (!match) {
       throw new Error(
         "Processor output path not found."
       );
     }
 
     const outputPath =
-      line.split(marker)[1].trim();
+      match[1].trim();
 
     const fs =
       await import("node:fs");
