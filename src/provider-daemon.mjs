@@ -248,9 +248,15 @@ async function cycle() {
     ? processorState.results
     : [];
 
-  const processed = results.filter(
+  // Processor success is determined by the processor status.
+  // Output-file eligibility is tracked separately so a PROCESSED
+  // result with output=null does not get misreported as FAILED.
+  const processorSuccess = results.filter(
+    item => item?.status === "PROCESSED"
+  );
+
+  const processed = processorSuccess.filter(
     item =>
-      item.status === "PROCESSED" &&
       typeof item.output === "string" &&
       item.output.length > 0
   );
@@ -260,7 +266,11 @@ async function cycle() {
   );
 
   await log(
-    `PROCESSOR_SUCCESS=${processed.length}`
+    `PROCESSOR_SUCCESS=${processorSuccess.length}`
+  );
+
+  await log(
+    `OFFER_DRAFT_ELIGIBLE=${processed.length}`
   );
 
   // ------------------------------------------------------------
