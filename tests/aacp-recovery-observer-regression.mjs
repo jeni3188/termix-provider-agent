@@ -83,5 +83,218 @@ console.log("PASS: wallet never used");
 console.log("PASS: signing never performed");
 console.log("PASS: broadcast never performed");
 console.log("PASS: submission never performed");
+
+/* --------------------------------------------------------- */
+/* TEST 2 — OPEN endpoint failure must fail closed           */
+/* --------------------------------------------------------- */
+
+{
+  const calls = [];
+
+  const fetchMock = async (url, options = {}) => {
+    calls.push({
+      url: String(url),
+      method: options.method ?? "GET"
+    });
+
+    if (String(url).includes("/api/v1/config")) {
+      return new Response(
+        JSON.stringify({ chainId: 97 }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (
+      String(url).includes(
+        "/api/v1/jobs?status=OPEN"
+      )
+    ) {
+      return new Response(
+        JSON.stringify({
+          error: "backend unavailable"
+        }),
+        {
+          status: 503,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (
+      String(url).includes(
+        "/api/v1/jobs?status=FUNDED"
+      )
+    ) {
+      return new Response(
+        JSON.stringify({
+          jobs: []
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    return new Response("not found", {
+      status: 404
+    });
+  };
+
+  const result =
+    await observeRecovery(fetchMock, {
+      previousState: "DOWN"
+    });
+
+  assert.equal(
+    result.state,
+    "DOWN"
+  );
+
+  assert.equal(
+    result.recovered,
+    false
+  );
+
+  assert.equal(
+    result.jobs.length,
+    0
+  );
+
+  assert.equal(
+    result.endpoints.open.ok,
+    false
+  );
+
+  assert.equal(
+    result.endpoints.funded.ok,
+    true
+  );
+
+  assert.ok(
+    calls.every(
+      (call) => call.method === "GET"
+    )
+  );
+
+  assert.equal(
+    result.safety.postPerformed,
+    false
+  );
+
+  console.log(
+    "PASS: OPEN failure fails closed"
+  );
+}
+
+/* --------------------------------------------------------- */
+/* TEST 3 — FUNDED endpoint failure must fail closed         */
+/* --------------------------------------------------------- */
+
+{
+  const calls = [];
+
+  const fetchMock = async (url, options = {}) => {
+    calls.push({
+      url: String(url),
+      method: options.method ?? "GET"
+    });
+
+    if (String(url).includes("/api/v1/config")) {
+      return new Response(
+        JSON.stringify({ chainId: 97 }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (
+      String(url).includes(
+        "/api/v1/jobs?status=OPEN"
+      )
+    ) {
+      return new Response(
+        JSON.stringify({
+          jobs: healthyPayload.jobs
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (
+      String(url).includes(
+        "/api/v1/jobs?status=FUNDED"
+      )
+    ) {
+      return new Response(
+        JSON.stringify({
+          error: "backend unavailable"
+        }),
+        {
+          status: 503,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    return new Response("not found", {
+      status: 404
+    });
+  };
+
+  const result =
+    await observeRecovery(fetchMock, {
+      previousState: "DOWN"
+    });
+
+  assert.equal(
+    result.state,
+    "DOWN"
+  );
+
+  assert.equal(
+    result.recovered,
+    false
+  );
+
+  assert.equal(
+    result.jobs.length,
+    0
+  );
+
+  assert.equal(
+    result.endpoints.open.ok,
+    true
+  );
+
+  assert.equal(
+    result.endpoints.funded.ok,
+    false
+  );
+
+  assert.ok(
+    calls.every(
+      (call) => call.method === "GET"
+    )
+  );
+
+  assert.equal(
+    result.safety.postPerformed,
+    false
+  );
+
+  console.log(
+    "PASS: FUNDED failure fails closed"
+  );
+}
+
 console.log("");
 console.log("AACP RECOVERY OBSERVER REGRESSION PASSED");

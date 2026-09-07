@@ -181,16 +181,46 @@ export async function observeRecovery(
     )
   ]);
 
+  /*
+   * Fail closed on partial endpoint failure.
+   *
+   * Recovery is considered HEALTHY only when both
+   * OPEN and FUNDED endpoints return valid HTTP 2xx
+   * responses. A single failed endpoint means the
+   * observer cannot establish a complete recovery state.
+   */
+  if (!open.ok || !funded.ok) {
+    return {
+      recovered: false,
+      previousState,
+      state: "DOWN",
+      config,
+      endpoints: {
+        open,
+        funded
+      },
+      jobs: [],
+      safety
+    };
+  }
+
+  const openJobs =
+    normalizeJobs(open.data);
+
+  const fundedJobs =
+    normalizeJobs(funded.data);
+
+  /*
+   * normalizeJobs() returning [] is intentionally treated
+   * as an empty result here. Schema validation remains the
+   * responsibility of the stricter read-only discovery path.
+   */
   const jobs = dedupeJobs([
-    ...normalizeJobs(open.data),
-    ...normalizeJobs(funded.data)
+    ...openJobs,
+    ...fundedJobs
   ]);
 
-  const healthy =
-    open.ok || funded.ok;
-
-  const state =
-    healthy ? "HEALTHY" : "BLOCKED";
+  const state = "HEALTHY";
 
   return {
     recovered:
