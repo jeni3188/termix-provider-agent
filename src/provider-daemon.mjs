@@ -1,6 +1,7 @@
 import { spawn } from "node:child_process";
 import { mkdir, appendFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
+import { intake as intakeArtifact } from "./artifact-intake.mjs";
 
 const INTERVAL_MS = Number(
   process.env.PROVIDER_DAEMON_INTERVAL_MS || 1800000
@@ -193,15 +194,112 @@ async function cycle() {
   // ------------------------------------------------------------
   await log("Step 2: automatic job processing");
 
-  const autoArgs = SIMULATION
-    ? ["run", "auto", intakeFile, "samples/Vulnerable.sol"]
-    : ["run", "auto"];
+  let autoArgs;
 
-  await log(
-    SIMULATION
-      ? `AUTO_INPUT=${intakeFile}`
-      : "AUTO_INPUT=provider-output/aacp-intake.json"
-  );
+  if (SIMULATION) {
+    /*
+     * Simulation still uses the real local artifact trust pipeline.
+     *
+     * The daemon must not hand samples/Vulnerable.sol directly to
+     * auto-processor because that bypasses job-scoped staging.
+     *
+     * Intake creates:
+     *   provider-output/source-staging/<jobId>/Vulnerable.sol
+     *   provider-output/source-staging/<jobId>/manifest.json
+     *
+     * The resulting staged path is then handed to auto-processor.
+     */
+    const simulationSource =
+      "samples/Vulnerable.sol";
+
+    const stagedJobs = [];
+
+    for (const job of jobs) {
+      const jobId =
+        job?.jobId ??
+        job?.id;
+
+      if (
+        typeof jobId !== "string" ||
+        !/^[A-Za-z0-9._-]{1,128}$/.test(jobId)
+      ) {
+        await log(
+          `SIMULATION_ARTIFACT_INTAKE_BLOCKED job=${String(jobId)}`
+        );
+        continue;
+      }
+
+      const intakeResult =
+        intakeArtifact(
+          jobId,
+          simulationSource,
+          null,
+          job
+        );
+
+      if (!intakeResult.allowed) {
+        await log(
+          `SIMULATION_ARTIFACT_INTAKE_BLOCKED job=${jobId} code=${intakeResult.code}`
+        );
+        continue;
+      }
+
+      const stagedPath =
+        intakeResult.intake?.source?.stagedPath;
+
+      if (
+        typeof stagedPath !== "string" ||
+        stagedPath.length === 0
+      ) {
+        await log(
+          `SIMULATION_ARTIFACT_INTAKE_INVALID job=${jobId}`
+        );
+        continue;
+      }
+
+      stagedJobs.push({
+        jobId,
+        stagedPath
+      });
+
+      await log(
+        `SIMULATION_ARTIFACT_STAGED job=${jobId} path=${stagedPath}`
+      );
+    }
+
+    if (stagedJobs.length === 0) {
+      await log("SIMULATION_ARTIFACT_INTAKE_FAILED");
+      await log("SKIP_OFFER_DRAFT=TRUE");
+      await log("LIVE_SUBMISSION=BLOCKED");
+      await log("CYCLE_COMPLETE");
+      return;
+    }
+
+    /*
+     * Current auto-processor accepts one explicit source path.
+     * For the current deterministic fixture there is one job.
+     */
+    autoArgs = [
+      "run",
+      "auto",
+      intakeFile,
+      stagedJobs[0].stagedPath
+    ];
+
+    await log(
+      `AUTO_INPUT=${intakeFile}`
+    );
+
+    await log(
+      `AUTO_SOURCE=${stagedJobs[0].stagedPath}`
+    );
+  } else {
+    autoArgs = ["run", "auto"];
+
+    await log(
+      "AUTO_INPUT=provider-output/aacp-intake.json"
+    );
+  }
 
   const process = await run(
     "pnpm",

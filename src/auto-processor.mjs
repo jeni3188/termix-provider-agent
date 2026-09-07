@@ -438,12 +438,17 @@ for (const [index, job] of jobs.entries()) {
       raw
         .split("\n")
         .find(line =>
-          line.includes("Output   :")
+          /^Output\s*:\s*.+$/.test(line.trim())
         );
 
-    const output =
+    const outputMatch =
       outputLine
-        ? outputLine.split("Output   :")[1].trim()
+        ? outputLine.trim().match(/^Output\s*:\s*(.+)$/)
+        : null;
+
+    const output =
+      outputMatch
+        ? outputMatch[1].trim()
         : null;
 
     results.push({
