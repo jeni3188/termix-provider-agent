@@ -34,15 +34,38 @@ for (const [name, endpoint] of checks) {
 
     if (!r.ok) {
       console.log(`❌ ${name.toUpperCase()}: HTTP ${r.status}`);
+
+      if (r.status >= 500) {
+        console.log("   State: BACKEND_UNAVAILABLE");
+      } else {
+        console.log("   State: BACKEND_REQUEST_FAILED");
+      }
+
+      failed = true;
+      continue;
+    }
+
+    if (json === null) {
+      console.log(`❌ ${name.toUpperCase()}: HTTP ${r.status}`);
+      console.log("   State: MALFORMED_RESPONSE");
+      console.log("   Reason: expected valid JSON");
+      failed = true;
+      continue;
+    }
+
+    if (
+      typeof json !== "object" ||
+      json === null
+    ) {
+      console.log(`❌ ${name.toUpperCase()}: HTTP ${r.status}`);
+      console.log("   State: MALFORMED_RESPONSE");
+      console.log("   Reason: JSON root is not an object");
       failed = true;
       continue;
     }
 
     console.log(`✅ ${name.toUpperCase()}: HTTP ${r.status}`);
-
-    if (json !== null) {
-      console.log("   JSON response: valid");
-    }
+    console.log("   JSON response: valid");
   } catch (err) {
     console.log(`❌ ${name.toUpperCase()}: ${err.message}`);
     failed = true;
