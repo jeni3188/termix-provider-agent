@@ -65,7 +65,9 @@
     "provider:observe": "node src/provider-observer.mjs",
     "test:provider-observer": "node tests/provider-observer-regression.mjs",
     "aacp-provider-discovery": "node src/aacp-provider-discovery.mjs",
-    "test:aacp-provider-discovery": "node tests/aacp-provider-discovery-regression.mjs"
+    "test:aacp-provider-discovery": "node tests/aacp-provider-discovery-regression.mjs",
+    "aacp-recovery-handoff": "node src/aacp-recovery-handoff.mjs",
+    "test:aacp-recovery-handoff": "node tests/aacp-recovery-handoff-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
