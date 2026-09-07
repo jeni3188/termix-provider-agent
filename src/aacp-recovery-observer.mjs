@@ -83,10 +83,23 @@ async function fetchJson(fetchImpl, url, timeoutMs) {
 }
 
 function normalizeJobs(payload) {
-  if (Array.isArray(payload)) return payload;
+  if (Array.isArray(payload)) {
+    return {
+      valid: true,
+      jobs: payload,
+      error: null
+    };
+  }
 
-  if (payload && Array.isArray(payload.jobs)) {
-    return payload.jobs;
+  if (
+    payload &&
+    Array.isArray(payload.jobs)
+  ) {
+    return {
+      valid: true,
+      jobs: payload.jobs,
+      error: null
+    };
   }
 
   if (
@@ -94,7 +107,11 @@ function normalizeJobs(payload) {
     payload.data &&
     Array.isArray(payload.data)
   ) {
-    return payload.data;
+    return {
+      valid: true,
+      jobs: payload.data,
+      error: null
+    };
   }
 
   if (
@@ -102,10 +119,18 @@ function normalizeJobs(payload) {
     payload.data &&
     Array.isArray(payload.data.jobs)
   ) {
-    return payload.data.jobs;
+    return {
+      valid: true,
+      jobs: payload.data.jobs,
+      error: null
+    };
   }
 
-  return [];
+  return {
+    valid: false,
+    jobs: [],
+    error: "JOBS_SCHEMA_INVALID"
+  };
 }
 
 function dedupeJobs(jobs) {
@@ -204,20 +229,46 @@ export async function observeRecovery(
     };
   }
 
-  const openJobs =
+  const openResult =
     normalizeJobs(open.data);
 
-  const fundedJobs =
+  const fundedResult =
     normalizeJobs(funded.data);
 
   /*
-   * normalizeJobs() returning [] is intentionally treated
-   * as an empty result here. Schema validation remains the
-   * responsibility of the stricter read-only discovery path.
+   * HTTP 200 is not sufficient to establish recovery.
+   * Both job endpoints must also expose a recognized
+   * response schema.
    */
+  if (
+    !openResult.valid ||
+    !fundedResult.valid
+  ) {
+    return {
+      recovered: false,
+      previousState,
+      state: "BLOCKED",
+      config,
+      endpoints: {
+        open: {
+          ...open,
+          schemaValid: openResult.valid,
+          schemaError: openResult.error
+        },
+        funded: {
+          ...funded,
+          schemaValid: fundedResult.valid,
+          schemaError: fundedResult.error
+        }
+      },
+      jobs: [],
+      safety
+    };
+  }
+
   const jobs = dedupeJobs([
-    ...openJobs,
-    ...fundedJobs
+    ...openResult.jobs,
+    ...fundedResult.jobs
   ]);
 
   const state = "HEALTHY";

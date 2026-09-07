@@ -296,5 +296,220 @@ console.log("PASS: submission never performed");
   );
 }
 
+
+/* --------------------------------------------------------- */
+/* TEST 4 — OPEN HTTP 200 with invalid jobs schema           */
+/* --------------------------------------------------------- */
+
+{
+  const calls = [];
+
+  const fetchMock = async (url, options = {}) => {
+    calls.push({
+      url: String(url),
+      method: options.method ?? "GET"
+    });
+
+    if (String(url).includes("/api/v1/config")) {
+      return new Response(
+        JSON.stringify({ chainId: 97 }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (
+      String(url).includes(
+        "/api/v1/jobs?status=OPEN"
+      )
+    ) {
+      return new Response(
+        JSON.stringify({
+          jobs: "INVALID"
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (
+      String(url).includes(
+        "/api/v1/jobs?status=FUNDED"
+      )
+    ) {
+      return new Response(
+        JSON.stringify({
+          jobs: []
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    return new Response("not found", {
+      status: 404
+    });
+  };
+
+  const result =
+    await observeRecovery(fetchMock, {
+      previousState: "DOWN"
+    });
+
+  assert.equal(
+    result.state,
+    "BLOCKED"
+  );
+
+  assert.equal(
+    result.recovered,
+    false
+  );
+
+  assert.equal(
+    result.jobs.length,
+    0
+  );
+
+  assert.equal(
+    result.endpoints.open.schemaValid,
+    false
+  );
+
+  assert.equal(
+    result.endpoints.open.schemaError,
+    "JOBS_SCHEMA_INVALID"
+  );
+
+  assert.ok(
+    calls.every(
+      (call) => call.method === "GET"
+    )
+  );
+
+  assert.equal(
+    result.safety.postPerformed,
+    false
+  );
+
+  console.log(
+    "PASS: OPEN invalid jobs schema fails closed"
+  );
+}
+
+/* --------------------------------------------------------- */
+/* TEST 5 — FUNDED HTTP 200 with invalid jobs schema         */
+/* --------------------------------------------------------- */
+
+{
+  const calls = [];
+
+  const fetchMock = async (url, options = {}) => {
+    calls.push({
+      url: String(url),
+      method: options.method ?? "GET"
+    });
+
+    if (String(url).includes("/api/v1/config")) {
+      return new Response(
+        JSON.stringify({ chainId: 97 }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (
+      String(url).includes(
+        "/api/v1/jobs?status=OPEN"
+      )
+    ) {
+      return new Response(
+        JSON.stringify({
+          jobs: healthyPayload.jobs
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    if (
+      String(url).includes(
+        "/api/v1/jobs?status=FUNDED"
+      )
+    ) {
+      return new Response(
+        JSON.stringify({
+          data: {
+            jobs: "INVALID"
+          }
+        }),
+        {
+          status: 200,
+          headers: { "content-type": "application/json" }
+        }
+      );
+    }
+
+    return new Response("not found", {
+      status: 404
+    });
+  };
+
+  const result =
+    await observeRecovery(fetchMock, {
+      previousState: "DOWN"
+    });
+
+  assert.equal(
+    result.state,
+    "BLOCKED"
+  );
+
+  assert.equal(
+    result.recovered,
+    false
+  );
+
+  assert.equal(
+    result.jobs.length,
+    0
+  );
+
+  assert.equal(
+    result.endpoints.funded.schemaValid,
+    false
+  );
+
+  assert.equal(
+    result.endpoints.funded.schemaError,
+    "JOBS_SCHEMA_INVALID"
+  );
+
+  assert.ok(
+    calls.every(
+      (call) => call.method === "GET"
+    )
+  );
+
+  assert.equal(
+    result.safety.postPerformed,
+    false
+  );
+
+  console.log(
+    "PASS: FUNDED invalid jobs schema fails closed"
+  );
+}
+
 console.log("");
 console.log("AACP RECOVERY OBSERVER REGRESSION PASSED");
