@@ -307,11 +307,179 @@ const fundedUrl =
   );
 }
 
+/* --------------------------------------------------------- */
+/* TEST 6 — individual job without ID must fail closed       */
+/* --------------------------------------------------------- */
+
+{
+  const { fetch } = mockFetch({
+    [configUrl]:
+      response(200, { network: "bsc-testnet" }),
+
+    [openUrl]:
+      response(200, {
+        jobs: [
+          {
+            status: "OPEN",
+            title: "Smart Contract Security Audit"
+          }
+        ]
+      }),
+
+    [fundedUrl]:
+      response(200, {
+        jobs: []
+      })
+  });
+
+  const result =
+    await discoverReadOnly(fetch, {
+      baseUrl: base
+    });
+
+  assert.equal(
+    result.state,
+    "MALFORMED_RESPONSE"
+  );
+
+  assert.equal(
+    result.jobs.length,
+    0
+  );
+
+  assert.deepEqual(
+    result.invalidJobs,
+    [
+      {
+        index: 0,
+        code: "JOB_ID_MISSING"
+      }
+    ]
+  );
+
+  assert.equal(
+    result.safety.postPerformed,
+    false
+  );
+
+  console.log(
+    "PASS: job without ID fails closed"
+  );
+}
+
+/* --------------------------------------------------------- */
+/* TEST 7 — individual job with invalid status must fail     */
+/* --------------------------------------------------------- */
+
+{
+  const { fetch } = mockFetch({
+    [configUrl]:
+      response(200, { network: "bsc-testnet" }),
+
+    [openUrl]:
+      response(200, {
+        jobs: [
+          {
+            jobId: "malformed-status-001",
+            status: "CANCELLED",
+            title: "Smart Contract Security Audit"
+          }
+        ]
+      }),
+
+    [fundedUrl]:
+      response(200, {
+        jobs: []
+      })
+  });
+
+  const result =
+    await discoverReadOnly(fetch, {
+      baseUrl: base
+    });
+
+  assert.equal(
+    result.state,
+    "MALFORMED_RESPONSE"
+  );
+
+  assert.equal(
+    result.jobs.length,
+    0
+  );
+
+  assert.deepEqual(
+    result.invalidJobs,
+    [
+      {
+        index: 0,
+        code: "JOB_STATUS_INVALID"
+      }
+    ]
+  );
+
+  console.log(
+    "PASS: invalid job status fails closed"
+  );
+}
+
+/* --------------------------------------------------------- */
+/* TEST 8 — non-object individual job must fail closed       */
+/* --------------------------------------------------------- */
+
+{
+  const { fetch } = mockFetch({
+    [configUrl]:
+      response(200, { network: "bsc-testnet" }),
+
+    [openUrl]:
+      response(200, {
+        jobs: [
+          "not-a-job"
+        ]
+      }),
+
+    [fundedUrl]:
+      response(200, {
+        jobs: []
+      })
+  });
+
+  const result =
+    await discoverReadOnly(fetch, {
+      baseUrl: base
+    });
+
+  assert.equal(
+    result.state,
+    "MALFORMED_RESPONSE"
+  );
+
+  assert.equal(
+    result.jobs.length,
+    0
+  );
+
+  assert.deepEqual(
+    result.invalidJobs,
+    [
+      {
+        index: 0,
+        code: "JOB_NOT_OBJECT"
+      }
+    ]
+  );
+
+  console.log(
+    "PASS: non-object job fails closed"
+  );
+}
+
 console.log("");
 console.log("========================================");
 console.log(" AACP READ-ONLY DISCOVERY REGRESSION");
 console.log("========================================");
-console.log("Passed: 5/5");
-console.log("Failed: 0/5");
+console.log("Passed: 8/8");
+console.log("Failed: 0/8");
 console.log("");
 console.log("ALL READ-ONLY DISCOVERY TESTS PASSED");

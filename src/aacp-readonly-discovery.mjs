@@ -156,6 +156,72 @@ function parseJobs(payload) {
   return null;
 }
 
+function validateJobShape(job) {
+  if (
+    !job ||
+    typeof job !== "object" ||
+    Array.isArray(job)
+  ) {
+    return {
+      valid: false,
+      code: "JOB_NOT_OBJECT"
+    };
+  }
+
+  const id =
+    job.jobId ??
+    job.id ??
+    null;
+
+  if (
+    typeof id !== "string" ||
+    id.trim() === ""
+  ) {
+    return {
+      valid: false,
+      code: "JOB_ID_MISSING"
+    };
+  }
+
+  const status =
+    String(job.status || "").toUpperCase();
+
+  if (
+    !["OPEN", "FUNDED"].includes(status)
+  ) {
+    return {
+      valid: false,
+      code: "JOB_STATUS_INVALID"
+    };
+  }
+
+  return {
+    valid: true,
+    code: null
+  };
+}
+
+function validateJobs(jobs) {
+  const invalid = [];
+
+  for (let index = 0; index < jobs.length; index++) {
+    const result =
+      validateJobShape(jobs[index]);
+
+    if (!result.valid) {
+      invalid.push({
+        index,
+        code: result.code
+      });
+    }
+  }
+
+  return {
+    valid: invalid.length === 0,
+    invalid
+  };
+}
+
 function dedupeJobs(jobs) {
   const seen =
     new Set();
@@ -163,29 +229,24 @@ function dedupeJobs(jobs) {
   const result = [];
 
   for (const job of jobs) {
-    if (
-      !job ||
-      typeof job !== "object" ||
-      Array.isArray(job)
-    ) {
+    const validation =
+      validateJobShape(job);
+
+    if (!validation.valid) {
       continue;
     }
 
     const id =
-      job.jobId ??
-      job.id ??
-      null;
+      String(
+        job.jobId ??
+        job.id
+      );
 
-    const key =
-      id === null
-        ? JSON.stringify(job)
-        : String(id);
-
-    if (seen.has(key)) {
+    if (seen.has(id)) {
       continue;
     }
 
-    seen.add(key);
+    seen.add(id);
     result.push(job);
   }
 
@@ -316,11 +377,32 @@ export async function discoverReadOnly(
     };
   }
 
+  const combinedJobs = [
+    ...openJobs,
+    ...fundedJobs
+  ];
+
+  const validation =
+    validateJobs(combinedJobs);
+
+  if (!validation.valid) {
+    return {
+      state: "MALFORMED_RESPONSE",
+      config,
+      endpoints: {
+        open,
+        funded
+      },
+      jobs: [],
+      inspectedJobs: [],
+      qualification: [],
+      invalidJobs: validation.invalid,
+      safety
+    };
+  }
+
   const jobs =
-    dedupeJobs([
-      ...openJobs,
-      ...fundedJobs
-    ]);
+    dedupeJobs(combinedJobs);
 
   const inspectedJobs =
     inspectJobs(jobs);
