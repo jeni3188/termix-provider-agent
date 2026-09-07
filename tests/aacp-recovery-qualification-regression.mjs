@@ -2,6 +2,14 @@ import fs from "node:fs";
 import os from "node:os";
 import path from "node:path";
 
+import {
+  createManifest
+} from "../src/artifact-manifest.mjs";
+
+import {
+  createTrustedArtifactReference
+} from "../src/trusted-artifact.mjs";
+
 import { observeRecovery } from "../src/aacp-recovery-observer.mjs";
 import {
   writeSnapshot
@@ -96,6 +104,56 @@ const mockFetch = async (url, options = {}) => {
 const tempDir = fs.mkdtempSync(
   path.join(os.tmpdir(), "aacp-recovery-qualification-")
 );
+
+
+const stagingRoot = path.resolve(
+  "provider-output",
+  "source-staging",
+  job.jobId
+);
+
+fs.mkdirSync(stagingRoot, {
+  recursive: true
+});
+
+const stagedSource = path.join(
+  stagingRoot,
+  "Vulnerable.sol"
+);
+
+const sourceFixture = path.resolve(
+  "samples",
+  "Vulnerable.sol"
+);
+
+fs.copyFileSync(
+  sourceFixture,
+  stagedSource
+);
+
+const manifestResult = createManifest(
+  job.jobId,
+  "Vulnerable.sol",
+  job
+);
+
+if (!manifestResult.allowed) {
+  throw new Error(
+    `MANIFEST_CREATION_FAILED: ${manifestResult.code}`
+  );
+}
+
+const trustedReference =
+  createTrustedArtifactReference(
+    job.jobId,
+    "Vulnerable.sol"
+  );
+
+if (!trustedReference.allowed) {
+  throw new Error(
+    `TRUSTED_ARTIFACT_FAILED: ${trustedReference.code}`
+  );
+}
 
 const observed = await observeRecovery(mockFetch, {
   previousState: "DOWN",

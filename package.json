@@ -52,7 +52,10 @@
     "test:aacp-recovery-observer": "node tests/aacp-recovery-observer-regression.mjs",
     "test:aacp-watch-observer-integration": "AACP_WATCH_TEST=1 node tests/aacp-watch-observer-integration-regression.mjs",
     "test:aacp-job-qualifier": "node tests/aacp-job-qualifier-regression.mjs",
-    "test:aacp-recovery-qualification": "node tests/aacp-recovery-qualification-regression.mjs"
+    "test:aacp-recovery-qualification": "node tests/aacp-recovery-qualification-regression.mjs",
+    "test:analysis-gate": "node tests/analysis-gate-regression.mjs",
+    "deliverable-gate": "node src/deliverable-gate.mjs",
+    "test:deliverable-gate": "node tests/deliverable-gate-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
