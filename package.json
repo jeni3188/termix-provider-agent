@@ -58,7 +58,8 @@
     "test:deliverable-gate": "node tests/deliverable-gate-regression.mjs",
     "test:aacp-preflight": "node tests/aacp-preflight-regression.mjs",
     "aacp-readonly-discovery": "node src/aacp-readonly-discovery.mjs",
-    "test:aacp-readonly-discovery": "node tests/aacp-readonly-discovery-regression.mjs"
+    "test:aacp-readonly-discovery": "node tests/aacp-readonly-discovery-regression.mjs",
+    "test:aacp-qualified-job-report": "node tests/aacp-qualified-job-report-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
