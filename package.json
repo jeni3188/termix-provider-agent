@@ -126,7 +126,9 @@
     "provider:evidence-chain-health-cross-layer-integrity-verify": "python src/aacp-evidence-chain-health-cross-layer-integrity-verifier.py",
     "test:provider-evidence-chain-health-cross-layer-integrity-verify": "python tests/aacp-evidence-chain-health-cross-layer-integrity-verifier-regression.py",
     "provider:evidence-chain-health-integrity-attestation": "python src/aacp-evidence-chain-health-integrity-attestation.py",
-    "test:provider-evidence-chain-health-integrity-attestation": "python tests/aacp-evidence-chain-health-integrity-attestation-regression.py"
+    "test:provider-evidence-chain-health-integrity-attestation": "python tests/aacp-evidence-chain-health-integrity-attestation-regression.py",
+    "provider:evidence-chain-health-attestation-consistency-verify": "python src/aacp-evidence-chain-health-attestation-consistency-verifier.py",
+    "test:provider-evidence-chain-health-attestation-consistency-verify": "python tests/aacp-evidence-chain-health-attestation-consistency-verifier-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
