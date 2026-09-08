@@ -100,7 +100,9 @@
     "provider:evidence-manifest-verify": "node src/aacp-provider-evidence-manifest-verifier.mjs",
     "test:provider-evidence-manifest-verify": "node tests/aacp-provider-evidence-manifest-verifier-regression.mjs",
     "provider:evidence-manifest-audit": "node src/aacp-provider-evidence-manifest-auditor.mjs",
-    "test:provider-evidence-manifest-audit": "node tests/aacp-provider-evidence-manifest-auditor-regression.mjs"
+    "test:provider-evidence-manifest-audit": "node tests/aacp-provider-evidence-manifest-auditor-regression.mjs",
+    "provider:evidence-manifest-audit-verify": "node src/aacp-provider-evidence-manifest-audit-verifier.mjs",
+    "test:provider-evidence-manifest-audit-verify": "node tests/aacp-provider-evidence-manifest-audit-verifier-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
