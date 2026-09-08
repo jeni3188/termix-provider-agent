@@ -79,7 +79,8 @@
     "provider:verify": "node src/aacp-provider-verifier.mjs",
     "test:provider-verify": "node tests/aacp-provider-verifier-regression.mjs",
     "provider:lifecycle": "node src/aacp-provider-lifecycle.mjs",
-    "test:provider-lifecycle": "node tests/aacp-provider-lifecycle-regression.mjs"
+    "test:provider-lifecycle": "node tests/aacp-provider-lifecycle-regression.mjs",
+    "provider:watch": "node src/aacp-provider-watch.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
