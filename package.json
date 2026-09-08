@@ -73,7 +73,9 @@
     "provider:preflight": "node src/aacp-provider-preflight.mjs",
     "test:provider-preflight": "node tests/aacp-provider-preflight-regression.mjs",
     "provider:audit": "node src/aacp-provider-audit.mjs",
-    "test:provider-audit": "node tests/aacp-provider-audit-regression.mjs"
+    "test:provider-audit": "node tests/aacp-provider-audit-regression.mjs",
+    "provider:evidence": "node src/aacp-provider-evidence.mjs",
+    "test:provider-evidence": "node tests/aacp-provider-evidence-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
