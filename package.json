@@ -86,7 +86,9 @@
     "provider:watch-history-verify": "node src/aacp-provider-watch-history-verifier.mjs",
     "test:provider-watch-history-verify": "node tests/aacp-provider-watch-history-verifier-regression.mjs",
     "provider:watch-history-analyze": "node src/aacp-provider-watch-history-analyzer.mjs",
-    "test:provider-watch-history-analyze": "node tests/aacp-provider-watch-history-analyzer-regression.mjs"
+    "test:provider-watch-history-analyze": "node tests/aacp-provider-watch-history-analyzer-regression.mjs",
+    "provider:watch-history-analysis-verify": "node src/aacp-provider-watch-history-analysis-verifier.mjs",
+    "test:provider-watch-history-analysis-verify": "node tests/aacp-provider-watch-history-analysis-verifier-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
