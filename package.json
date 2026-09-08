@@ -96,7 +96,9 @@
     "provider:watch-history-integrity-audit-verify": "node src/aacp-provider-watch-history-integrity-report-verifier.mjs",
     "test:provider-watch-history-integrity-audit-verify": "node tests/aacp-provider-watch-history-integrity-report-verifier-regression.mjs",
     "provider:evidence-manifest": "node src/aacp-provider-evidence-manifest.mjs",
-    "test:provider-evidence-manifest": "node tests/aacp-provider-evidence-manifest-regression.mjs"
+    "test:provider-evidence-manifest": "node tests/aacp-provider-evidence-manifest-regression.mjs",
+    "provider:evidence-manifest-verify": "node src/aacp-provider-evidence-manifest-verifier.mjs",
+    "test:provider-evidence-manifest-verify": "node tests/aacp-provider-evidence-manifest-verifier-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
