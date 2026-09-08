@@ -69,7 +69,9 @@
     "aacp-recovery-handoff": "node src/aacp-recovery-handoff.mjs",
     "test:aacp-recovery-handoff": "node tests/aacp-recovery-handoff-regression.mjs",
     "provider:decision": "node src/aacp-provider-decision.mjs",
-    "test:provider-decision": "node tests/aacp-provider-decision-regression.mjs"
+    "test:provider-decision": "node tests/aacp-provider-decision-regression.mjs",
+    "provider:preflight": "node src/aacp-provider-preflight.mjs",
+    "test:provider-preflight": "node tests/aacp-provider-preflight-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
