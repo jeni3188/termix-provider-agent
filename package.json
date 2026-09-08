@@ -106,7 +106,9 @@
     "provider:evidence-chain-health": "node src/aacp-evidence-chain-health-monitor.mjs",
     "test:provider-evidence-chain-health": "node tests/aacp-evidence-chain-health-monitor-regression.mjs",
     "provider:evidence-chain-health-verify": "node src/aacp-evidence-chain-health-verifier.mjs",
-    "test:provider-evidence-chain-health-verify": "node tests/aacp-evidence-chain-health-verifier-regression.mjs"
+    "test:provider-evidence-chain-health-verify": "node tests/aacp-evidence-chain-health-verifier-regression.mjs",
+    "provider:evidence-chain-health-audit": "node src/aacp-evidence-chain-health-auditor.mjs",
+    "test:provider-evidence-chain-health-audit": "node tests/aacp-evidence-chain-health-auditor-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
