@@ -82,7 +82,9 @@
     "test:provider-lifecycle": "node tests/aacp-provider-lifecycle-regression.mjs",
     "provider:watch": "node src/aacp-provider-watch.mjs",
     "provider:watch-history": "node src/aacp-provider-watch-history.mjs",
-    "test:provider-watch-history": "node tests/aacp-provider-watch-history-regression.mjs"
+    "test:provider-watch-history": "node tests/aacp-provider-watch-history-regression.mjs",
+    "provider:watch-history-verify": "node src/aacp-provider-watch-history-verifier.mjs",
+    "test:provider-watch-history-verify": "node tests/aacp-provider-watch-history-verifier-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
