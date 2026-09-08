@@ -75,7 +75,9 @@
     "provider:audit": "node src/aacp-provider-audit.mjs",
     "test:provider-audit": "node tests/aacp-provider-audit-regression.mjs",
     "provider:evidence": "node src/aacp-provider-evidence.mjs",
-    "test:provider-evidence": "node tests/aacp-provider-evidence-regression.mjs"
+    "test:provider-evidence": "node tests/aacp-provider-evidence-regression.mjs",
+    "provider:verify": "node src/aacp-provider-verifier.mjs",
+    "test:provider-verify": "node tests/aacp-provider-verifier-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
