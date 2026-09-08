@@ -112,7 +112,9 @@
     "provider:evidence-chain-health-audit-verify": "node src/aacp-evidence-chain-health-audit-verifier.mjs",
     "test:provider-evidence-chain-health-audit-verify": "node tests/aacp-evidence-chain-health-audit-verifier-regression.mjs",
     "provider:evidence-chain-health-audit-history": "node src/aacp-evidence-chain-health-audit-history.mjs",
-    "test:provider-evidence-chain-health-audit-history": "node tests/aacp-evidence-chain-health-audit-history-regression.mjs"
+    "test:provider-evidence-chain-health-audit-history": "node tests/aacp-evidence-chain-health-audit-history-regression.mjs",
+    "provider:evidence-chain-health-audit-history-verify": "node src/aacp-evidence-chain-health-audit-history-verifier.mjs",
+    "test:provider-evidence-chain-health-audit-history-verify": "node tests/aacp-evidence-chain-health-audit-history-verifier-regression.mjs"
   },
   "dependencies": {
     "ethers": "^6.17.0"
