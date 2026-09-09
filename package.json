@@ -160,7 +160,9 @@
     "provider:evidence-chain-health-cross-artifact-attestation-chain-finality-verify": "python src/aacp-evidence-chain-health-cross-artifact-attestation-chain-finality-verify.py",
     "test:provider-evidence-chain-health-cross-artifact-attestation-chain-finality-verify": "python tests/aacp-evidence-chain-health-cross-artifact-attestation-chain-finality-verify-regression.py",
     "provider:evidence-chain-health-cross-artifact-attestation-chain-finality-continuity-verify": "python src/aacp-evidence-chain-health-cross-artifact-attestation-chain-finality-continuity-verify.py",
-    "test:provider-evidence-chain-health-cross-artifact-attestation-chain-finality-continuity-verify": "python tests/aacp-evidence-chain-health-cross-artifact-attestation-chain-finality-continuity-verify-regression.py"
+    "test:provider-evidence-chain-health-cross-artifact-attestation-chain-finality-continuity-verify": "python tests/aacp-evidence-chain-health-cross-artifact-attestation-chain-finality-continuity-verify-regression.py",
+    "provider:evidence-chain-health-finality-stability-verify": "python src/aacp-evidence-chain-health-finality-stability-verify.py",
+    "test:provider-evidence-chain-health-finality-stability-verify": "python tests/aacp-evidence-chain-health-finality-stability-verify-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
