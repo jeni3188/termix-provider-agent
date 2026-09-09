@@ -138,7 +138,9 @@
     "provider:evidence-chain-health-semantic-checkpoint-verify": "python src/aacp-evidence-chain-health-semantic-checkpoint-verify.py",
     "test:provider-evidence-chain-health-semantic-checkpoint-verify": "python tests/aacp-evidence-chain-health-semantic-checkpoint-verify-regression.py",
     "provider:evidence-chain-health-snapshot-registry": "python src/aacp-evidence-chain-health-snapshot-registry.py",
-    "test:provider-evidence-chain-health-snapshot-registry": "python tests/aacp-evidence-chain-health-snapshot-registry-regression.py"
+    "test:provider-evidence-chain-health-snapshot-registry": "python tests/aacp-evidence-chain-health-snapshot-registry-regression.py",
+    "provider:evidence-chain-health-snapshot-registry-verify": "python src/aacp-evidence-chain-health-snapshot-registry-verifier.py",
+    "test:provider-evidence-chain-health-snapshot-registry-verify": "python tests/aacp-evidence-chain-health-snapshot-registry-verifier-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
