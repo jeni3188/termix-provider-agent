@@ -130,7 +130,9 @@
     "provider:evidence-chain-health-attestation-consistency-verify": "python src/aacp-evidence-chain-health-attestation-consistency-verifier.py",
     "test:provider-evidence-chain-health-attestation-consistency-verify": "python tests/aacp-evidence-chain-health-attestation-consistency-verifier-regression.py",
     "provider:evidence-chain-health-final-readiness": "python src/aacp-evidence-chain-health-final-readiness.py",
-    "test:provider-evidence-chain-health-final-readiness": "python tests/aacp-evidence-chain-health-final-readiness-regression.py"
+    "test:provider-evidence-chain-health-final-readiness": "python tests/aacp-evidence-chain-health-final-readiness-regression.py",
+    "provider:evidence-chain-health-post-readiness-drift-verify": "python src/aacp-evidence-chain-health-post-readiness-drift-verify.py",
+    "test:provider-evidence-chain-health-post-readiness-drift-verify": "python tests/aacp-evidence-chain-health-post-readiness-drift-verify-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
