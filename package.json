@@ -134,7 +134,9 @@
     "provider:evidence-chain-health-post-readiness-drift-verify": "python src/aacp-evidence-chain-health-post-readiness-drift-verify.py",
     "test:provider-evidence-chain-health-post-readiness-drift-verify": "python tests/aacp-evidence-chain-health-post-readiness-drift-verify-regression.py",
     "provider:evidence-chain-health-continuous-readiness-repeatability-verify": "python src/aacp-evidence-chain-health-continuous-readiness-repeatability-verify.py",
-    "test:provider-evidence-chain-health-continuous-readiness-repeatability-verify": "python tests/aacp-evidence-chain-health-continuous-readiness-repeatability-verify-regression.py"
+    "test:provider-evidence-chain-health-continuous-readiness-repeatability-verify": "python tests/aacp-evidence-chain-health-continuous-readiness-repeatability-verify-regression.py",
+    "provider:evidence-chain-health-semantic-checkpoint-verify": "python src/aacp-evidence-chain-health-semantic-checkpoint-verify.py",
+    "test:provider-evidence-chain-health-semantic-checkpoint-verify": "python tests/aacp-evidence-chain-health-semantic-checkpoint-verify-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
