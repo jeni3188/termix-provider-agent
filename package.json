@@ -144,7 +144,9 @@
     "provider:evidence-chain-health-snapshot-registry-continuity-verify": "python src/aacp-evidence-chain-health-snapshot-registry-continuity-verify.py",
     "test:provider-evidence-chain-health-snapshot-registry-continuity-verify": "python tests/aacp-evidence-chain-health-snapshot-registry-continuity-verify-regression.py",
     "provider:evidence-chain-health-temporal-continuity-verify": "python src/aacp-evidence-chain-health-temporal-continuity-verify.py",
-    "test:provider-evidence-chain-health-temporal-continuity-verify": "python tests/aacp-evidence-chain-health-temporal-continuity-verify-regression.py"
+    "test:provider-evidence-chain-health-temporal-continuity-verify": "python tests/aacp-evidence-chain-health-temporal-continuity-verify-regression.py",
+    "provider:evidence-chain-health-artifact-identity-verify": "python src/aacp-evidence-chain-health-artifact-identity-verify.py",
+    "test:provider-evidence-chain-health-artifact-identity-verify": "python tests/aacp-evidence-chain-health-artifact-identity-verify-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
