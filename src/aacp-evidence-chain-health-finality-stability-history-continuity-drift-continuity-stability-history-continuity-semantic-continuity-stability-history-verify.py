@@ -255,7 +255,7 @@ def main():
     observation = {
         "phase": 61,
         "type": PHASE61_TYPE,
-        "generatedAt": phase61["generatedAt"],
+        "generatedAt": datetime.now().astimezone().isoformat(),
         "projectionDigest": projection_digest,
         "continuityDigest": continuity_digest,
         "semanticDigest": semantic_digest,
