@@ -190,7 +190,9 @@
     "aacp:phase66": "python src/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-verify.py",
     "test:aacp:phase66": "python tests/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-verify-regression.py",
     "aacp:phase67": "python src/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-verify.py",
-    "test:aacp:phase67": "python tests/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-verify-regression.py"
+    "test:aacp:phase67": "python tests/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-verify-regression.py",
+    "aacp:phase68": "python src/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-verify.py",
+    "test:aacp:phase68": "python tests/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
