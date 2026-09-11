@@ -196,7 +196,9 @@
     "aacp:phase69": "python src/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-determinism-verify.py",
     "test:aacp:phase69": "python tests/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-determinism-regression.py",
     "aacp:phase70": "python src/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-determinism-integrity-verify.py",
-    "test:aacp:phase70": "python tests/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-determinism-integrity-regression.py"
+    "test:aacp:phase70": "python tests/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-determinism-integrity-regression.py",
+    "aacp:phase71": "python src/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-determinism-integrity-continuity-verify.py",
+    "test:aacp:phase71": "python tests/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-determinism-integrity-continuity-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
