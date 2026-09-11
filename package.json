@@ -204,7 +204,9 @@
     "aacp:phase73": "python3 src/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-determinism-integrity-continuity-stability-history-verify.py",
     "test:aacp:phase73": "python3 tests/aacp-evidence-chain-health-finality-stability-history-continuity-drift-continuity-stability-history-continuity-semantic-continuity-stability-history-integrity-continuity-stability-history-determinism-integrity-continuity-stability-history-regression.py",
     "aacp:phase74": "python src/aacp-phase74-determinism-integrity-history-verify.py",
-    "test:aacp:phase74": "python tests/aacp-phase74-determinism-integrity-history-regression.py"
+    "test:aacp:phase74": "python tests/aacp-phase74-determinism-integrity-history-regression.py",
+    "aacp:phase75": "python3 src/aacp-phase75-cross-phase-consistency-verify.py",
+    "test:aacp:phase75": "python3 tests/aacp-phase75-cross-phase-consistency-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
