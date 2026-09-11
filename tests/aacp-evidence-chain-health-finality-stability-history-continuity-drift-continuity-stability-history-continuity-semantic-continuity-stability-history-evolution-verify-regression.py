@@ -147,7 +147,7 @@ with tempfile.TemporaryDirectory() as td:
     checkpoint62 = base / (
         "aacp-evidence-chain-health-finality-stability-history-"
         "continuity-drift-continuity-stability-history-continuity-"
-        "semantic-continuity-stability-history-continuity-checkpoint.json"
+        "semantic-continuity-stability-history-checkpoint.json"
     )
 
     checkpoint64 = base / (
@@ -320,7 +320,7 @@ with tempfile.TemporaryDirectory() as td:
         base2 / (
             "aacp-evidence-chain-health-finality-stability-history-"
             "continuity-drift-continuity-stability-history-continuity-"
-            "semantic-continuity-stability-history-continuity-checkpoint.json"
+            "semantic-continuity-stability-history-checkpoint.json"
         ),
         {
             "version": 1,

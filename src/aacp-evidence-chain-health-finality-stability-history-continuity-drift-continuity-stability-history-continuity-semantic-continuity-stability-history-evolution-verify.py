@@ -55,7 +55,7 @@ PHASE62_HISTORY = BASE / (
 PHASE62_CHECKPOINT = BASE / (
     "aacp-evidence-chain-health-finality-stability-history-"
     "continuity-drift-continuity-stability-history-continuity-"
-    "semantic-continuity-stability-history-continuity-checkpoint.json"
+    "semantic-continuity-stability-history-checkpoint.json"
 )
 
 
