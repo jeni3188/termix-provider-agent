@@ -222,7 +222,9 @@
     "aacp:phase82": "python3 src/aacp-phase82-seal-continuity-verify.py",
     "test:aacp:phase82": "python3 tests/aacp-phase82-seal-continuity-regression.py",
     "aacp:phase83": "python3 src/aacp-phase83-cross-phase-finality-verify.py",
-    "test:aacp:phase83": "python3 tests/aacp-phase83-cross-phase-finality-regression.py"
+    "test:aacp:phase83": "python3 tests/aacp-phase83-cross-phase-finality-regression.py",
+    "aacp:phase84": "python3 src/aacp-phase84-finality-seal-attestation-verify.py",
+    "test:aacp:phase84": "python3 tests/aacp-phase84-finality-seal-attestation-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
