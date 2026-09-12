@@ -234,7 +234,9 @@
     "aacp:phase88": "python3 src/aacp-phase88-evidence-artifact-integrity-gate.py",
     "test:aacp:phase88": "python3 tests/aacp-phase88-evidence-artifact-integrity-regression.py",
     "aacp:phase89": "python3 src/aacp-phase89-evidence-artifact-integrity-continuity-gate.py",
-    "test:aacp:phase89": "python3 tests/aacp-phase89-evidence-artifact-integrity-continuity-regression.py"
+    "test:aacp:phase89": "python3 tests/aacp-phase89-evidence-artifact-integrity-continuity-regression.py",
+    "aacp:phase90": "python3 src/aacp-phase90-evidence-artifact-chain-finality-gate.py",
+    "test:aacp:phase90": "python3 tests/aacp-phase90-evidence-artifact-chain-finality-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
