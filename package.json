@@ -206,7 +206,9 @@
     "aacp:phase74": "python src/aacp-phase74-determinism-integrity-history-verify.py",
     "test:aacp:phase74": "python tests/aacp-phase74-determinism-integrity-history-regression.py",
     "aacp:phase75": "python3 src/aacp-phase75-cross-phase-consistency-verify.py",
-    "test:aacp:phase75": "python3 tests/aacp-phase75-cross-phase-consistency-regression.py"
+    "test:aacp:phase75": "python3 tests/aacp-phase75-cross-phase-consistency-regression.py",
+    "aacp:phase76": "python3 src/aacp-phase76-evidence-reconstruction-verify.py",
+    "test:aacp:phase76": "python3 tests/aacp-phase76-evidence-reconstruction-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
