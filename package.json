@@ -214,7 +214,9 @@
     "aacp:phase78": "python3 src/aacp-phase78-chain-integrity-verify.py",
     "test:aacp:phase78": "python3 tests/aacp-phase78-chain-integrity-regression.py",
     "aacp:phase79": "python3 src/aacp-phase79-deterministic-replay-verify.py",
-    "test:aacp:phase79": "python3 tests/aacp-phase79-deterministic-replay-regression.py"
+    "test:aacp:phase79": "python3 tests/aacp-phase79-deterministic-replay-regression.py",
+    "aacp:phase80": "python3 src/aacp-phase80-checkpoint-continuity-verify.py",
+    "test:aacp:phase80": "python3 tests/aacp-phase80-checkpoint-continuity-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
