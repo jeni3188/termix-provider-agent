@@ -228,7 +228,9 @@
     "aacp:phase85": "python3 src/aacp-phase85-attestation-stability-verify.py",
     "test:aacp:phase85": "python3 tests/aacp-phase85-attestation-stability-regression.py",
     "aacp:phase86": "python3 src/aacp-phase86-attestation-integrity-gate.py",
-    "test:aacp:phase86": "python3 tests/aacp-phase86-attestation-integrity-regression.py"
+    "test:aacp:phase86": "python3 tests/aacp-phase86-attestation-integrity-regression.py",
+    "aacp:phase87": "python3 src/aacp-phase87-evidence-chain-continuity-gate.py",
+    "test:aacp:phase87": "python3 tests/aacp-phase87-evidence-chain-continuity-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
