@@ -246,7 +246,9 @@
     "aacp:phase94": "python3 src/aacp-phase94-evidence-snapshot-continuity-terminal-anchor-gate.py",
     "test:aacp:phase94": "python3 tests/aacp-phase94-evidence-snapshot-continuity-terminal-anchor-regression.py",
     "aacp:phase95": "python3 src/aacp-phase95-evidence-chain-terminal-finality-gate.py",
-    "test:aacp:phase95": "python3 tests/aacp-phase95-evidence-chain-terminal-finality-regression.py"
+    "test:aacp:phase95": "python3 tests/aacp-phase95-evidence-chain-terminal-finality-regression.py",
+    "aacp:phase96": "python3 src/aacp-phase96-post-finality-verification-gate.py",
+    "test:aacp:phase96": "python3 tests/aacp-phase96-post-finality-verification-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
