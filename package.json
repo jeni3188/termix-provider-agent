@@ -240,7 +240,9 @@
     "aacp:phase91": "python3 src/aacp-phase91-evidence-artifact-chain-consistency-gate.py",
     "test:aacp:phase91": "python3 tests/aacp-phase91-evidence-artifact-chain-consistency-regression.py",
     "aacp:phase92": "python3 src/aacp-phase92-evidence-chain-cross-artifact-verification-gate.py",
-    "test:aacp:phase92": "python3 tests/aacp-phase92-evidence-chain-cross-artifact-verification-regression.py"
+    "test:aacp:phase92": "python3 tests/aacp-phase92-evidence-chain-cross-artifact-verification-regression.py",
+    "aacp:phase93": "python3 src/aacp-phase93-terminal-evidence-snapshot-integrity-gate.py",
+    "test:aacp:phase93": "python3 tests/aacp-phase93-terminal-evidence-snapshot-integrity-regression.py"
   },
   "dependencies": {
     "ethers": "^6.17.0"
